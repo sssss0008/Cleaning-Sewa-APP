@@ -1,0 +1,93 @@
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import CustomAddIcon from '../../../assets/booking.svg';
+
+export default function TabsLayout() {
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: 'green',
+        tabBarInactiveTintColor: 'gray',
+        tabBarStyle: {
+          backgroundColor: 'hsl(0, 0%, 95%)',
+        },
+      }}
+      
+    >
+      <Tabs.Screen
+        name="Home"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+
+      <Tabs.Screen
+        name="Service"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="construct-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+       <Tabs.Screen
+        name="service/ServiceDetail"
+        options={{
+          headerShown: false,
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="Book"
+       options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="About"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubble-ellipses-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="Contact"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="call-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
+  );
+}
+
+const styles = StyleSheet.create({
+  buttonWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingButton: {
+    width: 60,            // Ensure width and height match
+    height: 60,           // Ensure width and height match
+    borderRadius: 30,     // Always half of the width/height
+    backgroundColor: '#eee', // REQUIRED for shadows to show
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: -15,
+    
+
+  },
+})
