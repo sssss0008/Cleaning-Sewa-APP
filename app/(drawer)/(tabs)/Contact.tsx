@@ -64,10 +64,9 @@ export default function ContactScreen() {
           </TouchableOpacity>
 
           {/* COMPANY */}
-          <Text style={styles.companyName}>CleaningSewa | Welcome to
-Cleaning Sewa.</Text>
+          <Text style={styles.companyName}>CleaningSewa </Text>
           <Text style={styles.companySubtitle}>
-         Our team of trained professionals uses modern equipment and eco-friendly products to deliver the highest standard of cleaning services.
+       Professional Cleaning Services in Nepal
           </Text>
 
           {/* CARDS */}
@@ -103,7 +102,7 @@ Cleaning Sewa.</Text>
               <View style={styles.cardContent}>
                 <Text style={styles.cardTitle}>Email us</Text>
                 <Text style={[styles.cardSubtitle, styles.linkText]}>
-                  mail@CleaningSewa.com
+                  CleaningSewa@sriyog.com
                 </Text>
               </View>
             </TouchableOpacity>

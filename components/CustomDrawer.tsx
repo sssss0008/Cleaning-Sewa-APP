@@ -13,9 +13,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, usePathname } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
-import { 
-  widthPercentageToDP as wp, 
-  heightPercentageToDP as hp 
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp
 } from 'react-native-responsive-screen';
 
 export default function CustomDrawer(_props: DrawerContentComponentProps) {
@@ -69,16 +69,18 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
     <SafeAreaView style={styles.wrapper} edges={['top', 'bottom']}>
       <View style={styles.card}>
 
-        {/* PROFILE SECTION */}
+        {/* PROFILE SECTION (LOGO ON THE LEFT SIDE) */}
         <View style={styles.profileBox}>
           <Image
             source={require('../assets/images/icon.png')}
             style={styles.avatar}
           />
-          <Text style={styles.name} numberOfLines={1}>CleaningSewa</Text>
-          <Text style={styles.firebaseAuthText} numberOfLines={1} ellipsizeMode="tail">
-            Guest User
-          </Text>
+          <View style={styles.profileInfo}>
+            <Text style={styles.name} numberOfLines={1}>CleaningSewa</Text>
+            <Text style={styles.firebaseAuthText} numberOfLines={1} ellipsizeMode="tail">
+              Guest User
+            </Text>
+          </View>
         </View>
 
         {/* MENU */}
@@ -148,7 +150,7 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
 
           <View style={styles.dividerAdmin} />
 
-          {/* ADMIN LOGIN - FIXED ROUTE TO /Admin */}
+          {/* ADMIN LOGIN */}
           <MenuItem
             icon={isActive('/Admin') ? "shield-checkmark" : "shield-checkmark-outline"}
             label="Admin Login"
@@ -239,29 +241,33 @@ const styles = StyleSheet.create({
   profileBox: {
     backgroundColor: '#064E3B',
     paddingVertical: hp('2.5%'),
-    paddingHorizontal: wp('5%'),
+    paddingHorizontal: wp('4.5%'),
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: hp('1.5%')
   },
   avatar: {
-    width: wp('15%'),
-    height: wp('15%'),
-    borderRadius: wp('7.5%'),
-    marginBottom: hp('1%')
+    width: wp('13%'),
+    height: wp('13%'),
+    borderRadius: wp('6.5%'),
+    marginRight: wp('3.5%')
+  },
+  profileInfo: {
+    flex: 1,
+    justifyContent: 'center',
   },
   name: {
-    fontSize: wp('4.5%'),
+    fontSize: wp('4.2%'),
     fontWeight: '700',
     color: '#fff',
-    textAlign: 'center',
-    marginBottom: hp('0.5%')
+    textAlign: 'left',
+    marginBottom: hp('0.2%')
   },
   firebaseAuthText: {
     fontSize: wp('2.8%'),
     color: '#A7F3D0',
     fontWeight: '600',
-    textAlign: 'center'
+    textAlign: 'left'
   },
   menu: {
     paddingHorizontal: wp('3.5%'),

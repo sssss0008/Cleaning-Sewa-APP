@@ -18,49 +18,25 @@ export default function OnBoarding1() {
         <Text style={styles.skipbutton}>SKIP</Text>
       </Pressable>
 
-      <Text style={styles.title}>Welcome to CleaningSewa</Text>
+      <Text style={styles.title}>Professional Cleaning</Text>
 
       <Text style={styles.subtitle}>
-        From Repairs to Refresh – We’ve Got Your Home Covered.
+        Get professional cleaning services nearby you.
       </Text>
 
       <OnboardingComponent
         title="Next"
-        image={require('@/assets/onBoarding/onBoarding1.png')}
-        onPress={() => router.push('/onboarding2')}
+        image={require('@/assets/onBoarding/onBoarding1.jpg')}
+        onPress={() => router.push('/onboarding2')} // FIXED ROUTING HERE
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  skipContainer: {
-    position: 'absolute',
-    right: 21,
-    top: 55,
-    zIndex: 10,
-  },
-  skipbutton: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: 'purple',
-  },
-  title: {
-    paddingTop: 95,
-    paddingLeft: 21,
-    fontSize: 25,
-    fontWeight: '800',
-    paddingBottom: 12,
-    color: 'green',
-  },
-  subtitle: {
-    paddingHorizontal: 21,
-    fontSize: 16,
-    lineHeight: 22,
-    color: 'green',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  skipContainer: { position: 'absolute', right: 21, top: 55, zIndex: 10 },
+  skipbutton: { fontSize: 13, fontWeight: '600', color: 'purple' },
+  title: { paddingTop: 95, paddingLeft: 21, fontSize: 25, fontWeight: '800', paddingBottom: 12, color: 'green' },
+  subtitle: { paddingHorizontal: 21, fontSize: 16, lineHeight: 22, color: 'green' },
 });

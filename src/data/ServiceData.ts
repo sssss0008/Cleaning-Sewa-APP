@@ -1,5 +1,4 @@
-export const DEFAULT_SERVICE_IMAGE =
-  'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=600&auto=format&fit=crop';
+export const DEFAULT_SERVICE_IMAGE = require('../../assets/CleaningSewa-Photos/home-cleaning.jpg');
 
 export const servicesData2 = [
   {
@@ -10,8 +9,9 @@ export const servicesData2 = [
     description:
       'Professional bathroom cleaning in Nepal to restore hygiene and shine. We deep clean tiles, sinks, toilets, showers, and mirrors while safely removing mold, soap scum, hard water stains, and harmful bacteria. Using eco-friendly cleaning solutions and advanced equipment, our team ensures a fresh, hygienic, and safe bathroom environment for your family or office.',
     question: 'What is included in professional bathroom cleaning?',
-    answer: 'Bathroom cleaning includes deep cleaning and sanitizing of tiles, grout, sinks, toilets, showers, and mirrors, along with removing stains, mold, and hard water buildup.',
-    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Bathroom cleaning includes deep cleaning and sanitizing of tiles, grout, sinks, toilets, showers, and mirrors, along with removing stains, mold, and hard water buildup.',
+    image: require('../../assets/CleaningSewa-Photos/bathroom-cleaning.jpg'),
   },
   {
     id: 2,
@@ -21,8 +21,9 @@ export const servicesData2 = [
     description:
       'Expert kitchen cleaning service in Nepal designed to maintain a spotless cooking space. We sanitize countertops, cabinets, sinks, stovetops, and major appliances while removing stubborn grease, grime, and bacteria. Our professional team focuses on high-touch areas to ensure a perfectly hygienic and safe cooking environment for your home or office.',
     question: 'What does the kitchen cleaning service cover?',
-    answer: 'Kitchen cleaning covers degreasing and sanitizing countertops, cabinets, sinks, stovetops, and kitchen appliances to ensure a germ-free environment.',
-    image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Kitchen cleaning covers degreasing and sanitizing countertops, cabinets, sinks, stovetops, and kitchen appliances to ensure a germ-free environment.',
+    image: require('../../assets/CleaningSewa-Photos/kitchen-cleaning.jpg'),
   },
   {
     id: 3,
@@ -32,8 +33,9 @@ export const servicesData2 = [
     description:
       'Comprehensive home cleaning services in Nepal, covering living rooms, bedrooms, kitchens, and bathrooms. We efficiently remove dust, dirt, stains, and allergens from every surface to maintain a spotless, fresh, and healthy home environment. Our team uses safe methods to protect your living spaces while delivering unmatched freshness.',
     question: 'What is included in a comprehensive home cleaning?',
-    answer: 'Home cleaning includes a full top-to-bottom dusting, vacuuming, and sanitization of living rooms, bedrooms, kitchens, bathrooms, and high-touch areas.',
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Home cleaning includes a full top-to-bottom dusting, vacuuming, and sanitization of living rooms, bedrooms, kitchens, bathrooms, and high-touch areas.',
+    image: require('../../assets/CleaningSewa-Photos/home-cleaning.jpg'),
   },
   {
     id: 4,
@@ -43,8 +45,9 @@ export const servicesData2 = [
     description:
       'Professional carpet cleaning in Nepal to remove embedded dirt, dust, allergens, and stubborn stains. We restore your carpets to a clean, fresh, and highly hygienic state, significantly improving indoor air quality and prolonging the overall life of your carpet fabric. Safe and effective extraction techniques ensure deep material protection.',
     question: 'How often should carpets be professionally cleaned?',
-    answer: 'It is recommended to professionally clean carpets every 6 to 12 months to eliminate deep-seated dust, allergens, and stains effectively.',
-    image: 'https://images.unsplash.com/photo-1603712449443-a4540f7160ae?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'It is recommended to professionally clean carpets every 6 to 12 months to eliminate deep-seated dust, allergens, and stains effectively.',
+    image: require('../../assets/CleaningSewa-Photos/carpet-cleaning.jpg'),
   },
   {
     id: 5,
@@ -54,8 +57,9 @@ export const servicesData2 = [
     description:
       'Professional sofa and upholstery cleaning service in Nepal to revitalize your furniture. We deep clean all types of furniture, including fabric, leather, and microfiber sofas, recliners, chairs, and cushions. Our methods successfully remove deep dirt, sweat stains, odors, and allergens without harming the texture or color of the material.',
     question: 'Can you clean both leather and fabric sofas?',
-    answer: 'Yes, we provide specialized deep cleaning techniques tailored safe for leather, fabric, microfiber, and all other common upholstery materials.',
-    image: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, we provide specialized deep cleaning techniques tailored safe for leather, fabric, microfiber, and all other common upholstery materials.',
+    image: require('../../assets/CleaningSewa-Photos/sofa-upholstery-cleaning.jpg'),
   },
   {
     id: 6,
@@ -65,8 +69,9 @@ export const servicesData2 = [
     description:
       'Specialized move-in and move-out cleaning service in Nepal. We clean every single corner of your property including floors, walls, kitchens, bathrooms, fixtures, and furniture, ensuring a spotless and deeply sanitized space that is fully ready for new occupants or landlords. Ideal for securing security deposits or welcoming a fresh start.',
     question: 'What does a move-in/move-out cleaning entail?',
-    answer: 'This service covers an intensive deep cleaning of all rooms, floors, walls, cabinets inside-out, bathrooms, and appliances to leave the property completely move-in ready.',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'This service covers an intensive deep cleaning of all rooms, floors, walls, cabinets inside-out, bathrooms, and appliances to leave the property completely move-in ready.',
+    image: require('../../assets/CleaningSewa-Photos/move-in-move-out-cleaning.jpg'),
   },
   {
     id: 7,
@@ -76,8 +81,9 @@ export const servicesData2 = [
     description:
       'Professional disinfection and sanitization for homes, offices, and commercial spaces across Nepal. We eliminate germs, bacteria, and viruses using completely safe, hospital-grade, and effective sanitizing solutions. This service provides a thoroughly healthy and hygienic environment for families, employees, and visitors alike.',
     question: 'What areas are focused on during disinfection?',
-    answer: 'We focus extensively on high-touch surfaces like doorknobs, light switches, desks, countertops, and communal areas alongside general space misting.',
-    image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'We focus extensively on high-touch surfaces like doorknobs, light switches, desks, countertops, and communal areas alongside general space misting.',
+    image: require('../../assets/CleaningSewa-Photos/disinfection-sanitization-services.jpg'),
   },
   {
     id: 8,
@@ -87,8 +93,9 @@ export const servicesData2 = [
     description:
       'Air conditioner cleaning service in Nepal to improve indoor air quality and system efficiency. We thoroughly remove accumulated dust, allergens, and mold from filters, ducts, and cooling coils. Regular cleaning ensures clean and healthy air circulation while significantly reducing your monthly electricity bills.',
     question: 'Why is air conditioner cleaning necessary?',
-    answer: 'AC cleaning removes dust and mold from inner filters and coils, improving cooling efficiency, lowering power bills, and providing cleaner indoor air.',
-    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'AC cleaning removes dust and mold from inner filters and coils, improving cooling efficiency, lowering power bills, and providing cleaner indoor air.',
+    image: require('../../assets/CleaningSewa-Photos/ac-cleaning.jpg'),
   },
   {
     id: 9,
@@ -98,8 +105,9 @@ export const servicesData2 = [
     description:
       'Professional laptop cleaning service in Nepal using specialized techniques. We safely remove built-up dust, dirt, skin oils, and bacteria from delicate keyboards, screens, cooling vents, and connection ports. This enhances device hygiene, keeps your system running smoothly, and prevents dangerous internal overheating.',
     question: 'Is it safe to clean the laptop interior and screen?',
-    answer: 'Yes, our professionals use anti-static tools, screen-safe solutions, and delicate compressed air to clean devices safely without internal damage.',
-    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, our professionals use anti-static tools, screen-safe solutions, and delicate compressed air to clean devices safely without internal damage.',
+    image: require('../../assets/CleaningSewa-Photos/laptop-cleaning.jpg'),
   },
   {
     id: 10,
@@ -109,8 +117,9 @@ export const servicesData2 = [
     description:
       'Professional desktop and workstation cleaning in Nepal. We systematically remove dust, dirt, and debris from computers, monitors, keyboards, CPU towers, and general office desk surfaces. Keeping your hardware clean maintains a highly productive, clean, and healthy workspace while extending device operational lifespans.',
     question: 'What components are cleaned during desktop cleaning?',
-    answer: 'We clean the external monitors, keyboard keycaps, mouse, CPU exterior, vents, and surrounding desk surfaces to eliminate accumulated dust and grime.',
-    image: 'https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'We clean the external monitors, keyboard keycaps, mouse, CPU exterior, vents, and surrounding desk surfaces to eliminate accumulated dust and grime.',
+    image: require('../../assets/CleaningSewa-Photos/desktop-cleaning.jpg'),
   },
   {
     id: 11,
@@ -120,8 +129,9 @@ export const servicesData2 = [
     description:
       'Comprehensive aircraft cleaning services in Nepal, meticulously handling cabin seats, overhead storage areas, carpets, galleys, and general interiors. We ensure a completely hygienic, thoroughly sanitized, and comfortable environment for passengers and crew members, adhering closely to strict aviation sanitation standards.',
     question: 'What parts of the aircraft do you clean?',
-    answer: 'Our services focus on full cabin deep cleaning, including seats, tray tables, overhead bins, carpets, lavatories, and cockpit surfaces.',
-    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Our services focus on full cabin deep cleaning, including seats, tray tables, overhead bins, carpets, lavatories, and cockpit surfaces.',
+    image: require('../../assets/CleaningSewa-Photos/aeroplane-cleaning.jpg'),
   },
   {
     id: 12,
@@ -131,8 +141,9 @@ export const servicesData2 = [
     description:
       'Specialized helicopter cleaning service in Nepal tailored for luxury and commercial choppers. We sanitize and deep clean all interior surfaces, upholstery seating, windows, and cockpit equipment while strictly adhering to safety standards. Our delicate handling ensures flight instruments remain completely untouched and safe.',
     question: 'Do you follow specific safety regulations for helicopter cleaning?',
-    answer: 'Yes, all cleanings are conducted by trained technicians using specialized procedures that fully comply with standard aviation safety protocols.',
-    image: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, all cleanings are conducted by trained technicians using specialized procedures that fully comply with standard aviation safety protocols.',
+    image: require('../../assets/CleaningSewa-Photos/helicopter-cleaning.jpg'),
   },
   {
     id: 13,
@@ -142,8 +153,9 @@ export const servicesData2 = [
     description:
       'Professional cleaning of water storage and reserve tanks in Nepal. We completely remove accumulated sludge, mud, biological debris, and contaminants to ensure a safe, pure, and clean water supply for homes and businesses. Regular maintenance prevents bacterial growth and safeguards your household health.',
     question: 'How often should water reserve tanks be cleaned?',
-    answer: 'Water storage and reserve tanks should ideally be cleaned and disinfected every 6 months to prevent sludge buildup and bacterial contamination.',
-    image: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Water storage and reserve tanks should ideally be cleaned and disinfected every 6 months to prevent sludge buildup and bacterial contamination.',
+    image: require('../../assets/CleaningSewa-Photos/reserve-tank-cleaning.jpg'),
   },
   {
     id: 14,
@@ -153,19 +165,21 @@ export const servicesData2 = [
     description:
       'Premium marble and tile cleaning service in Nepal. We effectively remove deeply embedded dirt, tough stains, and unsightly grout discoloration, fully restoring the natural shine and maintaining the long-term beauty of your floors, walls, and counter surfaces. Our modern polishing methods breathe new life into dull stone.',
     question: 'Does this service include grout line cleaning?',
-    answer: 'Yes, we deeply scrub grout lines to remove embedded dirt and discoloration alongside polishing and buffing the tile or marble surfaces.',
-    image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, we deeply scrub grout lines to remove embedded dirt and discoloration alongside polishing and buffing the tile or marble surfaces.',
+    image: require('../../assets/CleaningSewa-Photos/marble-tile-cleaning.jpg'),
   },
   {
     id: 15,
-    name: 'Post-cleaning Cleaning',
+    name: 'Post-Construction Cleaning',
     words: 'Debris and fine dust removal.',
     number: 12,
     description:
-      'Thorough post-cleaning cleaning in Nepal for newly built or renovated spaces. We eliminate fine cleaning dust, plaster debris, paint splatters, and chemical residue from newly built or renovated properties. Our team makes the entire space perfectly spotless and immediately move-in ready.',
-    question: 'What is included in a post-cleaning clean?',
-    answer: 'This includes removing fine drywall dust, scraping paint or adhesive residue from glass and floors, and intensive deep cleaning of all surfaces.',
-    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=600&auto=format&fit=crop',
+      'Thorough post-construction cleaning in Nepal for newly built or renovated spaces. We eliminate fine drywall dust, plaster debris, paint splatters, and chemical residue from newly built or renovated properties. Our team makes the entire space perfectly spotless and immediately move-in ready.',
+    question: 'What is included in a post-construction clean?',
+    answer:
+      'This includes removing fine drywall dust, scraping paint or adhesive residue from glass and floors, and intensive deep cleaning of all surfaces.',
+    image: require('../../assets/CleaningSewa-Photos/post-construction-cleaning.jpg'),
   },
   {
     id: 16,
@@ -175,8 +189,9 @@ export const servicesData2 = [
     description:
       'Professional garden cleaning in Nepal to restore your property curb appeal. We efficiently remove fallen leaves, plant debris, trash, and unwanted organic items to maintain a neat, healthy, and visually appealing outdoor space. Regular cleanups help prevent lawn diseases and clear paths.',
     question: 'Does garden cleaning include lawn mowing?',
-    answer: 'Garden cleaning primarily focuses on debris, weed, and leaf removal, though regular lawn maintenance can be arranged upon request.',
-    image: 'https://images.unsplash.com/photo-1558904541-efa8c3a30fc9?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Garden cleaning primarily focuses on debris, weed, and leaf removal, though regular lawn maintenance can be arranged upon request.',
+    image: require('../../assets/CleaningSewa-Photos/garden-cleaning.jpg'),
   },
   {
     id: 17,
@@ -186,8 +201,9 @@ export const servicesData2 = [
     description:
       'Garage cleaning services in Nepal designed to clean and maximize your utility space. We remove deep accumulated dirt, tough engine oil stains, and unwanted clutter to create a clean, organized, and perfectly safe environment. Power washing methods ensure that greasy concrete floors look fresh again.',
     question: 'Can you remove stubborn motor oil stains from garage floors?',
-    answer: 'Yes, we utilize industrial-grade degreasers and high-pressure washers specifically designed to lift and clean deep motor oil stains.',
-    image: 'https://images.unsplash.com/photo-1616422285623-13ff0162193c?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, we utilize industrial-grade degreasers and high-pressure washers specifically designed to lift and clean deep motor oil stains.',
+    image: require('../../assets/CleaningSewa-Photos/garage-cleaning.jpg'),
   },
   {
     id: 18,
@@ -197,8 +213,9 @@ export const servicesData2 = [
     description:
       'Professional air duct and vent cleaning in Nepal to significantly improve interior airflow. We clear out heavy dust accumulation, lint, and hidden mold from your ventilation systems, keeping indoor air quality exceptionally healthy and ensuring your heating and cooling systems operate with maximum energy efficiency.',
     question: 'What are the benefits of cleaning air ducts?',
-    answer: 'Cleaning air ducts eliminates airborne dust and allergens, improves overall system airflow, reduces HVAC strain, and lowers energy expenses.',
-    image: 'https://images.unsplash.com/photo-1527689368864-3a821dbccc34?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Cleaning air ducts eliminates airborne dust and allergens, improves overall system airflow, reduces HVAC strain, and lowers energy expenses.',
+    image: require('../../assets/CleaningSewa-Photos/air-duct-vent-cleaning.jpg'),
   },
   {
     id: 19,
@@ -208,8 +225,9 @@ export const servicesData2 = [
     description:
       'Efficient post-event cleaning in Nepal to take the stress out of hosting. We rapidly remove accumulated trash, clean sudden spills, wipe down surfaces, and completely restore venues to their original spotless condition after parties, corporate events, weddings, or large family gatherings.',
     question: 'How quickly can you clean up after an event?',
-    answer: 'We offer flexible scheduling, including late-night or early-morning cleanups, to ensure the venue is perfectly restored within hours.',
-    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'We offer flexible scheduling, including late-night or early-morning cleanups, to ensure the venue is perfectly restored within hours.',
+    image: require('../../assets/CleaningSewa-Photos/post-event-cleaning.jpg'),
   },
   {
     id: 20,
@@ -219,8 +237,9 @@ export const servicesData2 = [
     description:
       'Comprehensive car interior cleaning in Nepal for a pristine driving experience. We thoroughly vacuum and shampoo seats, carpets, floor mats, and dashboard surfaces to remove deep dirt, stubborn stains, food crumbs, and foul odors, keeping your vehicle cabin fresh, sanitary, and looking like new.',
     question: 'What parts of the car interior are cleaned?',
-    answer: 'We deep clean seats (fabric or leather), mats, carpets, the dashboard, steering wheel, roof lining, door panels, and trunk spaces.',
-    image: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'We deep clean seats (fabric or leather), mats, carpets, the dashboard, steering wheel, roof lining, door panels, and trunk spaces.',
+    image: require('../../assets/CleaningSewa-Photos/car-interior-cleaning.jpg'),
   },
   {
     id: 21,
@@ -230,19 +249,21 @@ export const servicesData2 = [
     description:
       'Exterior building cleaning service in Nepal using safe, high-access methods. We clear out accumulated environmental dirt, bird droppings, grime, and pollution film from building facades. This service drastically enhances architectural aesthetics, boosts curb appeal, and maintains commercial property value.',
     question: 'How do you clean high-rise building facades safely?',
-    answer: 'Our certified professionals utilize safety ropes, scaffolding, and specialized pressure washing equipment to clean high exteriors safely.',
-    image: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Our certified professionals utilize safety ropes, scaffolding, and specialized pressure washing equipment to clean high exteriors safely.',
+    image: require('../../assets/CleaningSewa-Photos/facade-cleaning.jpg'),
   },
   {
     id: 22,
     name: 'Parquet Cleaning',
-    words: 'Wooden floor floor care.',
+    words: 'Wooden floor care.',
     number: 12,
     description:
       'Professional parquet and wooden floor cleaning in Nepal. We safely remove surface dust, light stains, and scuff marks, followed by professional surface polishing to maintain the rich natural shine, wood quality, and long-term longevity of your beautiful hardwood flooring.',
     question: 'Does this service include deep wood scratching repair?',
-    answer: 'This service focuses on professional deep cleaning, buffing, and polishing. For deep structural scratches, wood sanding and refinishing may be required.',
-    image: 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'This service focuses on professional deep cleaning, buffing, and polishing. For deep structural scratches, wood sanding and refinishing may be required.',
+    image: require('../../assets/CleaningSewa-Photos/parquet-cleaning.jpg'),
   },
   {
     id: 23,
@@ -252,8 +273,9 @@ export const servicesData2 = [
     description:
       'Deep cleaning for office and home chairs in Nepal. Our process effectively removes accumulated sweat, dark stains, dust, and unpleasant body odors while carefully maintaining fabric or leather quality. Enjoy a thoroughly hygienic, germ-free, and comfortable seating experience once again.',
     question: 'Can you handle large-volume office chair cleaning?',
-    answer: 'Yes, we cater to bulk corporate requests, cleaning hundreds of office workstations and conference chairs efficiently over weekends.',
-    image: 'https://images.unsplash.com/photo-1505797149-43b0069ec26b?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, we cater to bulk corporate requests, cleaning hundreds of office workstations and conference chairs efficiently over weekends.',
+    image: require('../../assets/CleaningSewa-Photos/chair-cleaning.jpg'),
   },
   {
     id: 24,
@@ -263,8 +285,9 @@ export const servicesData2 = [
     description:
       'Professional drain and pipe cleaning in Nepal. We effectively remove stubborn hair blocks, grease accumulation, and organic debris to ensure perfectly smooth water flow. This proactive service prevents foul sewage odors, backup hazards, and costly structural water damage.',
     question: 'What methods do you use to clear blocked drains?',
-    answer: 'We utilize a combination of mechanical drain snakes, high-pressure hydro-jetting, and safe plumbing tools to clear blockages without pipe damage.',
-    image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'We utilize a combination of mechanical drain snakes, high-pressure hydro-jetting, and safe plumbing tools to clear blockages without pipe damage.',
+    image: require('../../assets/CleaningSewa-Photos/drainage-cleaning.jpg'),
   },
   {
     id: 25,
@@ -274,8 +297,9 @@ export const servicesData2 = [
     description:
       'Safe septic tank cleaning and preventative maintenance in Nepal. We pump out waste, prevent dangerous system overflows, clear thick accumulated sludge, and maintain proper sanitation standards for residential properties, commercial offices, and industrial hubs.',
     question: 'How often should a septic tank be pumped out?',
-    answer: 'Depending on usage and family size, standard septic tanks should be professionally inspected and pumped every 2 to 4 years to avoid backups.',
-    image: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Depending on usage and family size, standard septic tanks should be professionally inspected and pumped every 2 to 4 years to avoid backups.',
+    image: require('../../assets/CleaningSewa-Photos/septic-tank-cleaning.jpg'),
   },
   {
     id: 26,
@@ -285,8 +309,9 @@ export const servicesData2 = [
     description:
       'Professional cleaning of lifts and elevators in Nepal. We focus intensely on scrubbing floors, polishing stainless steel walls, sanitizing high-touch control buttons, and wiping handrails to ensure strict hygiene, high presentation, and viral safety for all building users.',
     question: 'How do you sanitize elevator buttons safely without short-circuiting?',
-    answer: 'We use moisture-controlled micro-fiber cloths and specialized fast-evaporating electronic sanitizers to ensure safety and prevent electrical shorts.',
-    image: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'We use moisture-controlled micro-fiber cloths and specialized fast-evaporating electronic sanitizers to ensure safety and prevent electrical shorts.',
+    image: require('../../assets/CleaningSewa-Photos/lift-elevator-cleaning.jpg'),
   },
   {
     id: 27,
@@ -296,8 +321,9 @@ export const servicesData2 = [
     description:
       'Premium commercial and corporate office cleaning services in Nepal. We maintain pristine workspaces, thoroughly sanitizing modern offices, reception zones, conference rooms, and communal breakrooms to foster a highly professional, pristine, and healthy corporate environment.',
     question: 'Do you offer after-hours office cleaning?',
-    answer: 'Yes, we provide flexible night and weekend shifts to clean your office thoroughly without disrupting your daily business operations.',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, we provide flexible night and weekend shifts to clean your office thoroughly without disrupting your daily business operations.',
+    image: require('../../assets/CleaningSewa-Photos/corporate-house-cleaning.jpg'),
   },
   {
     id: 28,
@@ -307,8 +333,9 @@ export const servicesData2 = [
     description:
       'Medical-grade cleaning for hospitals, private clinics, and scientific laboratories in Nepal. Our specialized training ensures absolute sanitization, surgical infection control, and a sterile, safe environment for vulnerable patients, visiting families, and clinical staff.',
     question: 'Do you use specific disinfectants for medical cleaning?',
-    answer: 'Yes, we strictly use EPA-approved, hospital-grade disinfectants designed to eliminate critical bloodborne pathogens and hospital-acquired viruses.',
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, we strictly use EPA-approved, hospital-grade disinfectants designed to eliminate critical bloodborne pathogens and hospital-acquired viruses.',
+    image: require('../../assets/CleaningSewa-Photos/medical-facility-cleaning.jpg'),
   },
   {
     id: 29,
@@ -318,8 +345,9 @@ export const servicesData2 = [
     description:
       'Scheduled monthly cleaning services in Nepal for busy homes and corporate offices. This recurring program maintains a highly consistent baseline of hygiene, deep freshness, and spotless cleanliness without you ever having to remember to book again.',
     question: 'Can I customize the frequency or tasks for monthly visits?',
-    answer: 'Absolutely. We customize checklist parameters and specific dates to precisely match your recurring residential or business cleaning needs.',
-    image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Absolutely. We customize checklist parameters and specific dates to precisely match your recurring residential or business cleaning needs.',
+    image: require('../../assets/CleaningSewa-Photos/monthly-cleaning.jpg'),
   },
   {
     id: 30,
@@ -329,8 +357,9 @@ export const servicesData2 = [
     description:
       'Safe and rapid dead animal removal service in Nepal. We humanely and legally dispose of deceased animals from your property, fully disinfecting the affected area to completely prevent terrible odors, dangerous bacterial contamination, and severe health hazards.',
     question: 'Is emergency sanitation included after animal removal?',
-    answer: 'Yes, the area is treated thoroughly with deep biological neutralizing agents and powerful sanitizers to remove odors and bacteria completely.',
-    image: 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, the area is treated thoroughly with deep biological neutralizing agents and powerful sanitizers to remove odors and bacteria completely.',
+    image: require('../../assets/CleaningSewa-Photos/dead-animal-removal.jpg'),
   },
   {
     id: 31,
@@ -340,8 +369,9 @@ export const servicesData2 = [
     description:
       'Professional swimming pool cleaning and maintenance in Nepal. We ensure crystal clear water, vacuum bottom debris, balance critical chemicals, scrub tile walls, and check filtration systems to maintain a perfectly refreshing and completely safe environment for swimmers.',
     question: 'How often should pool chemicals be checked?',
-    answer: 'Pool water chemicals and pH balance should ideally be checked and adjusted weekly during hot swimming seasons to ensure user safety.',
-    image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Pool water chemicals and pH balance should ideally be checked and adjusted weekly during hot swimming seasons to ensure user safety.',
+    image: require('../../assets/CleaningSewa-Photos/swimming-pool-cleaning.jpg'),
   },
   {
     id: 32,
@@ -351,8 +381,9 @@ export const servicesData2 = [
     description:
       'Comprehensive school cleaning services in Nepal. We maintain pristine, highly hygienic learning environments by deeply sanitizing busy classrooms, libraries, common sports areas, and student restrooms to support the general health and well-being of students and teaching staff.',
     question: 'Do you provide eco-friendly cleaning for nurseries and preschools?',
-    answer: 'Yes, we use strictly non-toxic, chemical-free green cleaning agents in early education facilities to protect children from harsh odors.',
-    image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'Yes, we use strictly non-toxic, chemical-free green cleaning agents in early education facilities to protect children from harsh odors.',
+    image: require('../../assets/CleaningSewa-Photos/school-cleaning.jpg'),
   },
   {
     id: 33,
@@ -362,7 +393,8 @@ export const servicesData2 = [
     description:
       'Professional dog cleaning services in Nepal. We provide thorough mobile or in-salon grooming, deep coat washing, anti-flea treatments, and overall pet hygiene services to keep your furry friends smelling wonderful, looking perfectly clean, and remaining in top health.',
     question: 'What products are used for dog bathing?',
-    answer: 'We use premium, pH-balanced, hypoallergenic dog shampoos and conditioners that are highly gentle on your dog\'s skin and coat.',
-    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=600&auto=format&fit=crop',
+    answer:
+      'We use premium, pH-balanced, hypoallergenic dog shampoos and conditioners that are highly gentle on your dog\'s skin and coat.',
+    image: require('../../assets/CleaningSewa-Photos/dog-cleaning.jpg'),
   },
 ];

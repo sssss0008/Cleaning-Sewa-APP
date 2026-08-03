@@ -5,7 +5,7 @@ const { width, height } = Dimensions.get('window');
 type Props = { name: string; image: any };
 
 const SliderCard = ({ name, image }: Props) => {
-  
+
   // FIXED: Converts raw string image URLs seamlessly for your home page banner sliders
   const cleanImageSource = typeof image === 'string' ? { uri: image } : image;
 
@@ -29,16 +29,16 @@ const styles = StyleSheet.create({
   },
   image: {
     width: width * 0.9,
-    height: height * 0.28, 
+    height: height * 0.28,
   },
   textContainer: {
     position: 'absolute',
-    top: '30%', 
+    top: '30%',
     alignItems: 'center',
     paddingHorizontal: 10,
   },
   title: {
-    fontSize: width * 0.04, 
+    fontSize: width * 0.04,
     fontWeight: '900',
     color: '#fff',
     paddingBottom: 2,

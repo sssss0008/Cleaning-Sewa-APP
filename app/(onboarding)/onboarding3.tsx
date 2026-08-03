@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -13,18 +13,26 @@ export default function OnBoarding3() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Hassle-Free Booking</Text>
+      {/* Skip Button */}
+      <Pressable style={styles.skipContainer} onPress={handleFinish}>
+        <Text style={styles.skipbutton}>SKIP</Text>
+      </Pressable>
+
+      <Text style={styles.title}>Direct Payment</Text>
 
       <Text style={styles.subtitle}>
-        Book, track, and relax while we transform your living space.
+        Commission free network where you can save upto 30% forever.
       </Text>
 
-      <OnboardingComponent
-        title="Get Started"
-        // Uses onBoarding1.png to prevent Metro errors (Change to onBoarding3.png when added to assets)
-        image={require('@/assets/onBoarding/onBoarding1.png')}
-        onPress={handleFinish}
-      />
+      {/* Wide Wrapper Container */}
+      <View style={styles.onboardingWrapper}>
+        <OnboardingComponent
+          title="Get Started"
+          image={require('@/assets/onBoarding/onBoarding3.jpg')}
+          onPress={handleFinish}
+          buttonStyle={styles.wideButton}
+        />
+      </View>
     </View>
   );
 }
@@ -32,7 +40,18 @@ export default function OnBoarding3() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#fff'
+  },
+  skipContainer: {
+    position: 'absolute',
+    right: 21,
+    top: 55,
+    zIndex: 10
+  },
+  skipbutton: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: 'purple'
   },
   title: {
     paddingTop: 95,
@@ -40,12 +59,26 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: '800',
     paddingBottom: 12,
-    color: 'green',
+    color: 'green'
   },
   subtitle: {
     paddingHorizontal: 21,
     fontSize: 16,
     lineHeight: 22,
-    color: 'green',
+    color: 'green'
+  },
+
+  /* Expanded Button Styling */
+  onboardingWrapper: {
+    flex: 1,
+    width: '100%',
+    paddingHorizontal: 20,
+    alignItems: 'stretch',
+    justifyContent: 'flex-end',
+    paddingBottom: 30,
+  },
+  wideButton: {
+    width: '92%',
+    alignSelf: 'center',
   },
 });

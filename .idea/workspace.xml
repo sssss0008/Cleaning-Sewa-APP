@@ -4,7 +4,36 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d4926547-f15e-4f22-a88e-5dccb6617293" name="Changes" comment="" />
+    <list default="true" id="d4926547-f15e-4f22-a88e-5dccb6617293" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/(drawer)/ThemeContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/(drawer)/notification.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(drawer)/(tabs)/Book.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(drawer)/(tabs)/Book.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(drawer)/(tabs)/Contact.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(drawer)/(tabs)/Contact.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(drawer)/(tabs)/Home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(drawer)/(tabs)/Home.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(drawer)/(tabs)/Service.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(drawer)/(tabs)/Service.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(drawer)/Admin.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(drawer)/Admin.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(drawer)/Career.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(drawer)/Career.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(drawer)/Partnership.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(drawer)/Partnership.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(drawer)/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(drawer)/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(onboarding)/onboarding1.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(onboarding)/onboarding1.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(onboarding)/onboarding2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(onboarding)/onboarding2.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(onboarding)/onboarding3.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(onboarding)/onboarding3.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/onBoarding/onBoarding1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/onBoarding/onBoarding2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/onBoarding/onBoarding3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/whatsapp.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/whatsapp.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/CustomDrawer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/CustomDrawer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Header2.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Header2.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Header3drawer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Header3drawer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/home/ServiceCarousel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/home/ServiceCarousel.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/home/ServicesCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/home/ServicesCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/services/ServicesCards.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/services/ServicesCards.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/services/SliderCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/services/SliderCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data/ServiceData.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/data/ServiceData.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,22 +54,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/HP/Cleaning Sewa",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Merging main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/HP/Cleaning Sewa&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
   }
-}]]></component>
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="d4926547-f15e-4f22-a88e-5dccb6617293" name="Changes" comment="" />

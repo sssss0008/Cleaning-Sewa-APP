@@ -32,13 +32,15 @@ interface ButtonProps {
   children: React.ReactNode;
   style?: any;
   textStyle?: any;
+  onPress?: () => void;
 }
 
-const Button = ({ children, style, textStyle }: ButtonProps) => {
+const Button = ({ children, style, textStyle, onPress }: ButtonProps) => {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
       style={style}
+      onPress={onPress}
     >
       <Text style={[styles.text, textStyle]}>
         {children}
@@ -77,6 +79,13 @@ export default function PartnershipScreen() {
   const [overlayStatus, setOverlayStatus] = useState<'loading' | 'success'>('loading');
   const [activeInput, setActiveInput] = useState<string | null>(null);
 
+  // Validate that all attached files are JPG or PNG
+  const isJpgOrPng = (file: FileItem) => {
+    const fileName = file.fileName || file.uri;
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    return ext === 'jpg' || ext === 'jpeg' || ext === 'png';
+  };
+
   const clearAllFields = () => {
     setName('');
     setNumber('');
@@ -103,6 +112,21 @@ export default function PartnershipScreen() {
         { text: 'Yes, Clear', style: 'destructive', onPress: clearAllFields },
       ]
     );
+  };
+
+  const handleSubmit = () => {
+    // Check files before submitting
+    const allFiles = [...selectCompanyPhotos, ...selectCRCphotos];
+    const invalidFiles = allFiles.filter(file => !isJpgOrPng(file));
+
+    if (invalidFiles.length > 0) {
+      Alert.alert('Invalid File Type', 'Please upload only .jpg or .png images.');
+      return;
+    }
+
+    setOverlayStatus('loading');
+    setOverlayVisible(true);
+    // Proceed with form submission logic
   };
 
   return (
@@ -153,13 +177,16 @@ export default function PartnershipScreen() {
             style={[styles.input, activeInput === 'organization' && styles.inputActive]}
             placeholderTextColor={'#4B4B4B'}
             maxLength={100}
-
           />
 
           {/* Phone Number */}
           <Text style={styles.label}>Phone Number<Text style={{ color: 'red' }}>*</Text></Text>
           <View style={styles.phoneContainer}>
-            <Image source={countryLogo} style={styles.icon} resizeMode="contain" />
+            <Image
+              source={countryLogo}
+              style={styles.flagIcon}
+              resizeMode="contain"
+            />
             <TextInput
               placeholder="Enter your Phone Number"
               value={number}
@@ -196,9 +223,14 @@ export default function PartnershipScreen() {
             placeholderTextColor={'#4B4B4B'}
           />
 
-          {/* Company Photos */}
-          <Text style={styles.label}>Company Photos<Text style={{ color: 'red' }}>*</Text></Text>
-          <FileUploadBox value={selectCompanyPhotos} maxFiles={5} onChange={setSelectCompanyPhotos} />
+          {/* Company Photos (JPG/PNG only) */}
+          <Text style={styles.label}>Company Photos (JPG, PNG only)<Text style={{ color: 'red' }}>*</Text></Text>
+          <FileUploadBox
+            value={selectCompanyPhotos}
+            maxFiles={5}
+            onChange={setSelectCompanyPhotos}
+            allowedExtensions={['jpg', 'jpeg', 'png']}
+          />
 
           {/* Area Dropdown */}
           <Text style={styles.label}>City<Text style={{ color: 'red' }}>*</Text></Text>
@@ -262,9 +294,14 @@ export default function PartnershipScreen() {
             onClose={() => setActiveInput(null)}
           />
 
-          {/* Company Registration Certificates */}
-          <Text style={styles.label}>Company Registration Certificates<Text style={{ color: 'red' }}>*</Text></Text>
-          <FileUploadBox value={selectCRCphotos} maxFiles={10} onChange={setSelectCRCphotos} />
+          {/* Company Registration Certificates (JPG/PNG only) */}
+          <Text style={styles.label}>Company Registration Certificates (JPG, PNG only)<Text style={{ color: 'red' }}>*</Text></Text>
+          <FileUploadBox
+            value={selectCRCphotos}
+            maxFiles={10}
+            onChange={setSelectCRCphotos}
+            allowedExtensions={['jpg', 'jpeg', 'png']}
+          />
 
           {/* How did you hear about us Dropdown */}
           <Text style={styles.label}>How did you hear about us?<Text style={{ color: 'red' }}>*</Text></Text>
@@ -303,6 +340,7 @@ export default function PartnershipScreen() {
 
             <Button
               style={styles.buttonSubmit}
+              onPress={handleSubmit}
               textStyle={{ color: 'white', textAlign: 'center' }}>
               Submit
             </Button>
@@ -373,12 +411,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: height * 0.02,
   },
-  icon: {
+  flagIcon: {
     width: wp('7%'),
-    height: hp('3%'),
+    height: hp('3.8%'),
     position: 'absolute',
-    left: 10,
+    left: wp('3%'),
     zIndex: 2,
+    borderRadius: 0,
+    backgroundColor: 'transparent',
   },
   clearIcon: {
     width: wp('6%'),
@@ -391,7 +431,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderColor: '#E2E8F0',
     height: height * 0.055,
-    paddingLeft: wp('12%'),
+    paddingLeft: wp('13.5%'),
     paddingRight: 10,
     fontSize: width * 0.035,
     fontWeight: '500',

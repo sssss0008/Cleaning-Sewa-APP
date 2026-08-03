@@ -1,30 +1,47 @@
+import React from 'react';
 import { Drawer } from 'expo-router/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import CustomDrawer from '@/components/CustomDrawer';
-import { Dimensions } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
+import { ThemeProvider, useTheme } from './ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
-export default function DrawerLayout() {
+function DrawerNavigator() {
+  const { isDarkMode, colors } = useTheme();
+
   return (
     <Drawer
+      initialRouteName="(tabs)"
       drawerContent={(props) => <CustomDrawer {...props} />}
       screenOptions={{
         headerShown: false,
         drawerType: 'front',
-        drawerStyle: {
-          width: width * 0.8,
-          height: height * 0.9,
-          backgroundColor: 'transparent',
-          position: 'absolute',
-          top: height * 0.05, // 5% from top
-          borderRadius: 20,
-          overflow: 'hidden',
-        },
-        overlayColor: 'rgba(0,0,0,0.5)',
+        drawerActiveTintColor: colors.primary,
+        drawerInactiveTintColor: colors.subText,
+        drawerStyle: [
+          styles.glossyDrawer,
+          {
+            backgroundColor: colors.drawerBg,
+            borderColor: colors.drawerBorder,
+          },
+        ],
+        overlayColor: isDarkMode ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.45)',
       }}
     >
-      {/* 1. Main Tabs (Home, Service, Book, About, Contact) */}
+      {/* 1. Glossary (Placed directly ABOVE Home) */}
+      <Drawer.Screen
+        name="Glossary"
+        options={{
+          drawerLabel: 'Glossary',
+          title: 'Glossary',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="book-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* 2. Main Tabs (Home Screen) */}
       <Drawer.Screen
         name="(tabs)"
         options={{
@@ -36,7 +53,7 @@ export default function DrawerLayout() {
         }}
       />
 
-      {/* 2. Admin Portal */}
+      {/* 3. Admin Portal */}
       <Drawer.Screen
         name="Admin"
         options={{
@@ -48,24 +65,14 @@ export default function DrawerLayout() {
         }}
       />
 
-      {/* 3. FAQs */}
+      {/* 4. FAQs */}
       <Drawer.Screen
         name="FAQs"
         options={{
           drawerLabel: 'FAQs',
+          title: 'FAQs',
           drawerIcon: ({ color, size }) => (
             <Ionicons name="help-circle-outline" size={size} color={color} />
-          ),
-        }}
-      />
-
-      {/* 4. Glossary */}
-      <Drawer.Screen
-        name="Glossary"
-        options={{
-          drawerLabel: 'Glossary',
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="book-outline" size={size} color={color} />
           ),
         }}
       />
@@ -75,6 +82,7 @@ export default function DrawerLayout() {
         name="Partnership"
         options={{
           drawerLabel: 'Partnership',
+          title: 'Partnership',
           drawerIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
           ),
@@ -86,6 +94,7 @@ export default function DrawerLayout() {
         name="Career"
         options={{
           drawerLabel: 'Career',
+          title: 'Career',
           drawerIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" size={size} color={color} />
           ),
@@ -94,3 +103,28 @@ export default function DrawerLayout() {
     </Drawer>
   );
 }
+
+export default function DrawerLayout() {
+  return (
+    <ThemeProvider>
+      <DrawerNavigator />
+    </ThemeProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  glossyDrawer: {
+    width: width * 0.8,
+    height: height * 0.9,
+    position: 'absolute',
+    top: height * 0.05,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+  },
+});

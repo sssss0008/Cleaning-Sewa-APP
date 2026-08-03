@@ -10,14 +10,15 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
-  Pressable,
+  Image,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import * as ImagePicker from 'expo-image-picker';
 import Header2 from '@/components/Header2';
 
 const { width, height } = Dimensions.get('window');
 
-// 1. All 32 Services from screenshots
+// 1. All 32 Services
 const cleaningServices = [
   'Bathroom Cleaning',
   'Kitchen Cleaning',
@@ -50,10 +51,10 @@ const cleaningServices = [
   'School Cleaning',
   'Dog Cleaning',
   'Office Cleaning',
-  'Monthly Cleaning'
+  'Monthly Cleaning',
 ];
 
-// 2. All 32 Property Types from screenshots
+// 2. All 32 Property Types
 const propertyTypes = [
   'Airports & Transport Hubs',
   'Apartment',
@@ -86,7 +87,7 @@ const propertyTypes = [
   'Warehouses',
   'Wedding Venues',
   'Wellness Centers',
-  'Other'
+  'Other',
 ];
 
 const cities = ['Kathmandu', 'Lalitpur', 'Bhaktapur', 'Pokhara', 'Biratnagar', 'Chitwan'];
@@ -109,31 +110,92 @@ export default function ServiceBookingScreen() {
   const [timing, setTiming] = useState('');
   const [leadSource, setLeadSource] = useState('');
   const [message, setMessage] = useState('');
-  
+
+  // Image Upload State
+  const [imageUri, setImageUri] = useState<string | null>(null);
+
+  // Error State Map
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Standalone Custom Selector Modal States
+  // Custom Selector Modal States
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerTitle, setPickerTitle] = useState('');
-  const [pickerItems, setPickerItems] = useState([]);
+  const [pickerItems, setPickerItems] = useState<string[]>([]);
   const [pickerTarget, setPickerTarget] = useState('');
 
-  const openPicker = (title, items, targetStateSetterName) => {
+  // Launch Image Library
+  const handlePickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert(
+        'Permission Required',
+        'You need to grant photo access permissions to upload images.'
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUri(null);
+  };
+
+  const openPicker = (title: string, items: string[], targetStateSetterName: string) => {
     setPickerTitle(title);
     setPickerItems(items);
     setPickerTarget(targetStateSetterName);
     setPickerVisible(true);
   };
 
-  const handleSelectValue = (value) => {
+  const clearError = (fieldName: string) => {
+    if (errors[fieldName]) {
+      setErrors((prev) => {
+        const updated = { ...prev };
+        delete updated[fieldName];
+        return updated;
+      });
+    }
+  };
+
+  const handleSelectValue = (value: string) => {
     switch (pickerTarget) {
-      case 'city': setCity(value); break;
-      case 'budget': setBudget(value); break;
-      case 'service': setService(value); break;
-      case 'propertyType': setPropertyType(value); break;
-      case 'timing': setTiming(value); break;
-      case 'leadSource': setLeadSource(value); break;
-      default: break;
+      case 'city':
+        setCity(value);
+        clearError('city');
+        break;
+      case 'budget':
+        setBudget(value);
+        clearError('budget');
+        break;
+      case 'service':
+        setService(value);
+        clearError('service');
+        break;
+      case 'propertyType':
+        setPropertyType(value);
+        break;
+      case 'timing':
+        setTiming(value);
+        clearError('timing');
+        break;
+      case 'leadSource':
+        setLeadSource(value);
+        clearError('leadSource');
+        break;
+      default:
+        break;
     }
     setPickerVisible(false);
   };
@@ -150,28 +212,78 @@ export default function ServiceBookingScreen() {
     setTiming('');
     setLeadSource('');
     setMessage('');
+    setImageUri(null);
+    setErrors({});
   };
 
   const handleClearForm = () => {
-    Alert.alert(
-      'Clear Form',
-      'Are you sure you want to clear all fields?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Yes, Clear', style: 'destructive', onPress: clearForm },
-      ]
-    );
+    Alert.alert('Clear Form', 'Are you sure you want to clear all fields?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Yes, Clear', style: 'destructive', onPress: clearForm },
+    ]);
+  };
+
+  // Validation Routine
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Full Name is required';
+    } else if (fullName.trim().length < 2) {
+      newErrors.fullName = 'Please enter a valid full name';
+    }
+
+    if (email.trim().length > 0) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+    }
+
+    const cleanPhone = phone.trim().replace(/[- ]/g, '');
+    if (!cleanPhone) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(cleanPhone)) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
+    }
+
+    if (!city) {
+      newErrors.city = 'Please select a city';
+    }
+
+    if (!budget) {
+      newErrors.budget = 'Please select your budget';
+    }
+
+    if (!service) {
+      newErrors.service = 'Please select at least one service';
+    }
+
+    if (!timing) {
+      newErrors.timing = 'Please select when you need the service';
+    }
+
+    if (!leadSource) {
+      newErrors.leadSource = 'Please tell us how you found us';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
-    if (!fullName || !phone || !city || !budget || !service || !timing || !leadSource) {
-      Alert.alert('Required Fields Missing', 'Please complete all required fields marked with *');
+    if (!validateForm()) {
+      Alert.alert(
+        'Validation Error',
+        'Please correct the highlighted fields before submitting.'
+      );
       return;
     }
+
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      Alert.alert('Success', 'Your booking request has been submitted successfully.');
+      Alert.alert('Success 🎉', 'Your booking request has been submitted successfully.');
       clearForm();
     }, 1500);
   };
@@ -188,49 +300,73 @@ export default function ServiceBookingScreen() {
         <Text style={styles.outerTitle}>Book Cleaning Service in Nepal</Text>
 
         <View style={styles.formCard}>
-          <Text style={styles.brandText}>CleaningSewa</Text>
-          <Text style={styles.brandSubText}>Service Booking Form</Text>
-          <View style={styles.divider} />
-
           {/* Full Name */}
-          <Text style={styles.fieldLabel}>Full Name<Text style={styles.asterisk}> *</Text></Text>
+          <Text style={styles.fieldLabel}>
+            Full Name<Text style={styles.asterisk}> *</Text>
+          </Text>
           <TextInput
-            style={styles.inputField}
+            style={[styles.inputField, errors.fullName && styles.inputErrorBorder]}
             value={fullName}
-            onChangeText={setFullName}
+            onChangeText={(val) => {
+              setFullName(val);
+              clearError('fullName');
+            }}
             placeholder="Enter full name"
             placeholderTextColor="#9CA3AF"
           />
+          {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
 
           {/* Email */}
           <Text style={styles.fieldLabel}>eMail</Text>
           <TextInput
-            style={styles.inputField}
+            style={[styles.inputField, errors.email && styles.inputErrorBorder]}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(val) => {
+              setEmail(val);
+              clearError('email');
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             placeholder="example@mail.com"
             placeholderTextColor="#9CA3AF"
           />
+          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-          {/* Phone */}
-          <Text style={styles.fieldLabel}>Phone<Text style={styles.asterisk}> *</Text></Text>
-          <TextInput
-            style={styles.inputField}
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            placeholder="Enter phone number"
-            placeholderTextColor="#9CA3AF"
-          />
+          {/* Phone with Nepal Flag */}
+          <Text style={styles.fieldLabel}>
+            Phone<Text style={styles.asterisk}> *</Text>
+          </Text>
+          <View style={[styles.phoneInputWrapper, errors.phone && styles.inputErrorBorder]}>
+            <Text style={styles.flagIcon}>🇳🇵</Text>
+            <TextInput
+              style={styles.phoneInputField}
+              value={phone}
+              onChangeText={(val) => {
+                setPhone(val);
+                clearError('phone');
+              }}
+              keyboardType="phone-pad"
+              maxLength={10}
+              placeholder="98XXXXXXXX"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+          {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
 
           {/* City */}
-          <Text style={styles.fieldLabel}>City<Text style={styles.asterisk}> *</Text></Text>
-          <TouchableOpacity style={styles.dropdownTrigger} onPress={() => openPicker('Find a city', cities, 'city')}>
-            <Text style={city ? styles.selectedText : styles.placeholderText}>{city || 'Select city'}</Text>
+          <Text style={styles.fieldLabel}>
+            City<Text style={styles.asterisk}> *</Text>
+          </Text>
+          <TouchableOpacity
+            style={[styles.dropdownTrigger, errors.city && styles.inputErrorBorder]}
+            onPress={() => openPicker('Find a city', cities, 'city')}
+          >
+            <Text style={city ? styles.selectedText : styles.placeholderText}>
+              {city || 'Select city'}
+            </Text>
             <Text style={styles.dropdownArrow}>▼</Text>
           </TouchableOpacity>
+          {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
 
           {/* Nearest Landmark */}
           <Text style={styles.fieldLabel}>Nearest Landmark</Text>
@@ -243,48 +379,96 @@ export default function ServiceBookingScreen() {
           />
 
           {/* Budget */}
-          <Text style={styles.fieldLabel}>Budget in NPR<Text style={styles.asterisk}> *</Text></Text>
-          <TouchableOpacity style={styles.dropdownTrigger} onPress={() => openPicker('Find an option', budgetOptions, 'budget')}>
-            <Text style={budget ? styles.selectedText : styles.placeholderText}>{budget || 'Select estimated budget'}</Text>
+          <Text style={styles.fieldLabel}>
+            Budget in NPR<Text style={styles.asterisk}> *</Text>
+          </Text>
+          <TouchableOpacity
+            style={[styles.dropdownTrigger, errors.budget && styles.inputErrorBorder]}
+            onPress={() => openPicker('Find an option', budgetOptions, 'budget')}
+          >
+            <Text style={budget ? styles.selectedText : styles.placeholderText}>
+              {budget || 'Select estimated budget'}
+            </Text>
             <Text style={styles.dropdownArrow}>▼</Text>
           </TouchableOpacity>
+          {errors.budget && <Text style={styles.errorText}>{errors.budget}</Text>}
 
           {/* Select Services */}
-          <Text style={styles.fieldLabel}>Select Services<Text style={styles.asterisk}> *</Text></Text>
-          <View style={styles.serviceFieldContainer}>
-            <TouchableOpacity style={styles.serviceAddBtn} onPress={() => openPicker('Find an option', cleaningServices, 'service')}>
+          <Text style={styles.fieldLabel}>
+            Select Services<Text style={styles.asterisk}> *</Text>
+          </Text>
+          <View style={[styles.serviceFieldContainer, errors.service && styles.inputErrorBorder]}>
+            <TouchableOpacity
+              style={styles.serviceAddBtn}
+              onPress={() => openPicker('Find an option', cleaningServices, 'service')}
+            >
               <Text style={styles.serviceAddText}>+</Text>
             </TouchableOpacity>
-            {service ? <Text style={styles.activeServiceTag}>{service}</Text> : <Text style={[styles.placeholderText, {marginLeft: 8}]}>Choose service</Text>}
+            {service ? (
+              <Text style={styles.activeServiceTag}>{service}</Text>
+            ) : (
+              <Text style={[styles.placeholderText, { marginLeft: 8 }]}>Choose service</Text>
+            )}
           </View>
+          {errors.service && <Text style={styles.errorText}>{errors.service}</Text>}
 
           {/* Property Type */}
           <Text style={styles.fieldLabel}>Property Type</Text>
-          <TouchableOpacity style={styles.dropdownTrigger} onPress={() => openPicker('Find an option', propertyTypes, 'propertyType')}>
-            <Text style={propertyType ? styles.selectedText : styles.placeholderText}>{propertyType || 'Select building/property context'}</Text>
+          <TouchableOpacity
+            style={styles.dropdownTrigger}
+            onPress={() => openPicker('Find an option', propertyTypes, 'propertyType')}
+          >
+            <Text style={propertyType ? styles.selectedText : styles.placeholderText}>
+              {propertyType || 'Select building/property context'}
+            </Text>
             <Text style={styles.dropdownArrow}>▼</Text>
           </TouchableOpacity>
 
-          {/* Drag & Drop Photos Mock Area */}
+          {/* Photos Upload Area */}
           <Text style={styles.fieldLabel}>Add Photos of your Property</Text>
-          <TouchableOpacity style={styles.uploadAreaContainer} onPress={() => Alert.alert('Upload', 'Image storage picker launched')}>
-            <Text style={styles.uploadIcon}>☉</Text>
-            <Text style={styles.uploadText}>Drop files here or click to browse</Text>
-          </TouchableOpacity>
+          {imageUri ? (
+            <View style={styles.imagePreviewWrapper}>
+              <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+              <TouchableOpacity style={styles.removeImageBadge} onPress={handleRemoveImage}>
+                <Text style={styles.removeImageText}>✕ Remove Photo</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.uploadAreaContainer} onPress={handlePickImage}>
+              <Text style={styles.uploadIcon}>☉</Text>
+              <Text style={styles.uploadText}>Drop files here or click to browse</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Timing Selector */}
-          <Text style={styles.fieldLabel}>When do you need service?<Text style={styles.asterisk}> *</Text></Text>
-          <TouchableOpacity style={styles.dropdownTrigger} onPress={() => openPicker('Select timeline', timingOptions, 'timing')}>
-            <Text style={timing ? styles.selectedText : styles.placeholderText}>{timing || 'Select dynamic schedule priority'}</Text>
+          <Text style={styles.fieldLabel}>
+            When do you need service?<Text style={styles.asterisk}> *</Text>
+          </Text>
+          <TouchableOpacity
+            style={[styles.dropdownTrigger, errors.timing && styles.inputErrorBorder]}
+            onPress={() => openPicker('Select timeline', timingOptions, 'timing')}
+          >
+            <Text style={timing ? styles.selectedText : styles.placeholderText}>
+              {timing || 'Select dynamic schedule priority'}
+            </Text>
             <Text style={styles.dropdownArrow}>▼</Text>
           </TouchableOpacity>
+          {errors.timing && <Text style={styles.errorText}>{errors.timing}</Text>}
 
           {/* Lead Attribution */}
-          <Text style={styles.fieldLabel}>How did you know about us?<Text style={styles.asterisk}> *</Text></Text>
-          <TouchableOpacity style={styles.dropdownTrigger} onPress={() => openPicker('Select option', leadSources, 'leadSource')}>
-            <Text style={leadSource ? styles.selectedText : styles.placeholderText}>{leadSource || 'Choose an option'}</Text>
+          <Text style={styles.fieldLabel}>
+            How did you know about us?<Text style={styles.asterisk}> *</Text>
+          </Text>
+          <TouchableOpacity
+            style={[styles.dropdownTrigger, errors.leadSource && styles.inputErrorBorder]}
+            onPress={() => openPicker('Select option', leadSources, 'leadSource')}
+          >
+            <Text style={leadSource ? styles.selectedText : styles.placeholderText}>
+              {leadSource || 'Choose an option'}
+            </Text>
             <Text style={styles.dropdownArrow}>▼</Text>
           </TouchableOpacity>
+          {errors.leadSource && <Text style={styles.errorText}>{errors.leadSource}</Text>}
 
           {/* Message Area */}
           <Text style={styles.fieldLabel}>Message</Text>
@@ -305,22 +489,28 @@ export default function ServiceBookingScreen() {
               <Text style={styles.clearFormTextLabel}>Clear form</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.submitBtnBlock} onPress={handleSubmit} disabled={isSubmitting}>
+            <TouchableOpacity
+              style={styles.submitBtnBlock}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+              activeOpacity={0.8}
+            >
               {isSubmitting ? (
                 <ActivityIndicator color="#FFF" size="small" />
               ) : (
-                <Text style={styles.submitBtnTextLabel}>Book</Text>
+                <Text style={styles.submitBtnTextLabel}>BOOK NOW</Text>
               )}
             </TouchableOpacity>
           </View>
 
           <Text style={styles.warningInfoLabel}>
-            Do not submit passwords through this form. <Text style={styles.reportFormLink}>Report malicious form</Text>
+            Do not submit passwords through this form.{' '}
+            <Text style={styles.reportFormLink}>Report malicious form</Text>
           </Text>
         </View>
       </KeyboardAwareScrollView>
 
-      {/* Embedded Standalone Searchable Option Picker Overlap Modal */}
+      {/* Option Picker Modal */}
       <Modal visible={pickerVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContentCard}>
@@ -368,23 +558,8 @@ const styles = StyleSheet.create({
     marginHorizontal: width * 0.04,
     borderRadius: 8,
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingVertical: 20,
     elevation: 2,
-  },
-  brandText: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#1F2937',
-  },
-  brandSubText: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#E5E7EB',
-    marginVertical: 18,
   },
   fieldLabel: {
     fontSize: 13,
@@ -400,17 +575,47 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 6,
-    height: 40,
+    height: 42,
     paddingHorizontal: 12,
     fontSize: 14,
     color: '#1F2937',
     backgroundColor: '#FFF',
   },
+  phoneInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 6,
+    height: 42,
+    paddingHorizontal: 10,
+    backgroundColor: '#FFF',
+  },
+  flagIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  phoneInputField: {
+    flex: 1,
+    fontSize: 14,
+    color: '#1F2937',
+    paddingVertical: 0,
+  },
+  inputErrorBorder: {
+    borderColor: '#DC2626',
+    borderWidth: 1.5,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 11,
+    marginTop: 4,
+    fontWeight: '500',
+  },
   dropdownTrigger: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 6,
-    height: 40,
+    height: 42,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
@@ -441,15 +646,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   serviceAddBtn: {
-    width: 26,
-    height: 26,
+    width: 28,
+    height: 28,
     borderRadius: 4,
     backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
   },
   serviceAddText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#4B5563',
   },
@@ -458,12 +663,12 @@ const styles = StyleSheet.create({
     borderColor: '#DCFCE7',
     borderWidth: 1,
     color: '#166534',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 4,
     marginLeft: 8,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   uploadAreaContainer: {
     borderWidth: 1.5,
@@ -484,6 +689,28 @@ const styles = StyleSheet.create({
   uploadText: {
     fontSize: 12,
     color: '#6B7280',
+  },
+  imagePreviewWrapper: {
+    marginTop: 4,
+    alignItems: 'center',
+  },
+  imagePreview: {
+    width: '100%',
+    height: 180,
+    borderRadius: 8,
+    resizeMode: 'cover',
+  },
+  removeImageBadge: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 6,
+  },
+  removeImageText: {
+    color: '#DC2626',
+    fontSize: 12,
+    fontWeight: '600',
   },
   messageBox: {
     borderWidth: 1,
@@ -507,6 +734,7 @@ const styles = StyleSheet.create({
   clearFormBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 10,
   },
   clearFormIconSymbol: {
     fontSize: 15,
@@ -519,17 +747,24 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   submitBtnBlock: {
-    backgroundColor: '#16A34A', // Swapped out standard slate colors for a direct solid emerald brand token representation
-    borderRadius: 4,
-    paddingHorizontal: 28,
-    paddingVertical: 10,
+    backgroundColor: '#000000',
+    borderRadius: 8,
+    paddingHorizontal: 36,
+    paddingVertical: 14,
+    minWidth: 140,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   submitBtnTextLabel: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   warningInfoLabel: {
     fontSize: 11,
@@ -539,8 +774,8 @@ const styles = StyleSheet.create({
   reportFormLink: {
     textDecorationLine: 'underline',
   },
-  
-  // Custom Layer Modal Styles
+
+  // Modal Styles
   modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -41,6 +41,11 @@ const Button = ({ children, style, textStyle, onPress }: any) => {
   );
 };
 
+export type FileItem = {
+  uri: string;
+  fileName?: string;
+};
+
 export default function CareerScreen() {
   const scrollRef = useRef<any>(null);
 
@@ -52,11 +57,6 @@ export default function CareerScreen() {
   const [experience, setExperience] = useState('');
   const [emergencyNumber, setEmergencyNumber] = useState('');
   const [coverMessage, setCoverMessage] = useState('');
-
-  type FileItem = {
-    uri: string;
-    fileName?: string;
-  };
 
   // photos
   const [selectedCV, setSelectedCV] = useState<FileItem[]>([]);
@@ -71,6 +71,13 @@ export default function CareerScreen() {
 
   // Shared active focus state system mapping layout changes
   const [activeInput, setActiveInput] = useState<string | null>(null);
+
+  // Validate JPG/PNG files
+  const isJpgOrPng = (file: FileItem) => {
+    const fileName = file.fileName || file.uri;
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    return ext === 'jpg' || ext === 'jpeg' || ext === 'png';
+  };
 
   const clearAllFields = () => {
     setName('');
@@ -103,6 +110,21 @@ export default function CareerScreen() {
         },
       ]
     );
+  };
+
+  const handleSubmit = () => {
+    // Check files before submitting
+    const allFiles = [...selectedID, ...selectedCV];
+    const invalidFiles = allFiles.filter(file => !isJpgOrPng(file));
+
+    if (invalidFiles.length > 0) {
+      Alert.alert('Invalid File Type', 'Please upload only .jpg or .png images.');
+      return;
+    }
+
+    setOverlayStatus('loading');
+    setOverlayVisible(true);
+    // Proceed with form submission logic
   };
 
   return (
@@ -146,12 +168,12 @@ export default function CareerScreen() {
             maxLength={30}
           />
 
-          {/* Phone Number */}
+          {/* Phone Number (Full Nepal Flag) */}
           <Text style={styles.label}>Phone Number<Text style={{ color: 'red' }}>*</Text></Text>
           <View style={styles.phoneContainer}>
             <Image
               source={countryLogo}
-              style={styles.icon}
+              style={styles.flagIcon}
               resizeMode="contain"
             />
             <TextInput
@@ -183,7 +205,6 @@ export default function CareerScreen() {
               ]}
               placeholderTextColor={'#4B4B4B'}
               maxLength={12}
-
             />
           </View>
 
@@ -234,12 +255,13 @@ export default function CareerScreen() {
             keyboardType="numeric"
           />
 
-          {/* ID Proof */}
-          <Text style={styles.label}>ID Proof<Text style={{ color: 'red' }}>*</Text></Text>
+          {/* ID Proof (JPG/PNG only) */}
+          <Text style={styles.label}>ID Proof (JPG, PNG only)<Text style={{ color: 'red' }}>*</Text></Text>
           <FileUploadBox
             value={selectedID}
             onChange={setSelectedID}
             maxFiles={5}
+            allowedExtensions={['jpg', 'jpeg', 'png']}
           />
 
           {/* Preferred Working Area */}
@@ -255,12 +277,12 @@ export default function CareerScreen() {
             maxSelections={5}
           />
 
-          {/* Emergency Contact Number */}
+          {/* Emergency Contact Number (Full Nepal Flag) */}
           <Text style={styles.label}>Emergency Contact Number<Text style={{ color: 'red' }}>*</Text></Text>
           <View style={styles.phoneContainer}>
             <Image
               source={countryLogo}
-              style={styles.icon}
+              style={styles.flagIcon}
               resizeMode="contain"
             />
             <TextInput
@@ -295,12 +317,13 @@ export default function CareerScreen() {
             />
           </View>
 
-          {/* CV/Resume */}
-          <Text style={styles.label}>Upload Training Certificate</Text>
+          {/* Training Certificate (JPG/PNG only) */}
+          <Text style={styles.label}>Upload Training Certificate (JPG, PNG only)</Text>
           <FileUploadBox
             value={selectedCV}
             onChange={setSelectedCV}
             maxFiles={10}
+            allowedExtensions={['jpg', 'jpeg', 'png']}
           />
 
           {/* Cover Letter */}
@@ -338,6 +361,7 @@ export default function CareerScreen() {
 
             <Button
               style={styles.buttonSubmit}
+              onPress={handleSubmit}
               textStyle={{ color: 'white', textAlign: 'center' }}
             >
               Submit
@@ -355,7 +379,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   formContainer: {
-    paddingHorizontal: width * 0.06, // Optimized padding grid alignment
+    paddingHorizontal: width * 0.06,
     paddingTop: height * 0.02,
     backgroundColor: 'white',
   },
@@ -369,32 +393,34 @@ const styles = StyleSheet.create({
     marginVertical: 20
   },
   input: {
-    borderWidth: 1.5, // Standard premium design blueprint thickness
+    borderWidth: 1.5,
     borderRadius: 12,
     paddingHorizontal: width * 0.035,
-    height: height * 0.055, // Standard responsive sizing height standard
+    height: height * 0.055,
     marginBottom: height * 0.02,
     fontSize: width * 0.035,
     fontWeight: '500',
-    borderColor: '#E2E8F0', // Replaced raw dark black outline with slate neutral gray
+    borderColor: '#E2E8F0',
     color: '#1A1A1A',
     backgroundColor: '#fff',
   },
   inputActive: {
-    borderColor: 'hsl(142, 71%, 45%)',      // Dynamic premium highlight glow color
-    backgroundColor: '#F4F7FF',  // Soft backdrop selection tint color
+    borderColor: 'hsl(142, 71%, 45%)',
+    backgroundColor: '#F4F7FF',
   },
   phoneContainer: {
     position: 'relative',
     justifyContent: 'center',
     marginBottom: height * 0.02,
   },
-  icon: {
+  flagIcon: {
     width: wp('7%'),
-    height: hp('3%'),
+    height: hp('3.8%'),
     position: 'absolute',
-    left: 10,
+    left: wp('3%'),
     zIndex: 2,
+    borderRadius: 0,
+    backgroundColor: 'transparent',
   },
   clearIcon: {
     width: wp('6%'),
@@ -407,7 +433,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderColor: '#E2E8F0',
     height: height * 0.055,
-    paddingLeft: wp('12%'),
+    paddingLeft: wp('13.5%'),
     paddingRight: 10,
     fontSize: width * 0.035,
     fontWeight: '500',

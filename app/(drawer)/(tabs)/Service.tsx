@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  TextInput,
   ImageBackground,
-  Animated,
   ImageSourcePropType,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,7 +17,13 @@ import ServicesCards from '../../../components/services/ServicesCards';
 import ServicesDisplaycard from '../../../components/services/ServicesDisplaycard';
 import Header2 from '@/components/Header2';
 import { servicesData2, DEFAULT_SERVICE_IMAGE } from '../../../src/data/ServiceData';
-import Ionicons from '@expo/vector-icons/Ionicons';
+
+// --- Safe Image Helper Function ---
+const getSafeImageSource = (source: any) => {
+  if (!source) return DEFAULT_SERVICE_IMAGE;
+  if (typeof source === 'string') return { uri: source };
+  return source; // Returns local require() number directly
+};
 
 // --- Safe Image Component with Default Fallback ---
 interface SafeImageProps {
@@ -29,17 +33,12 @@ interface SafeImageProps {
 }
 
 const SafeImage: React.FC<SafeImageProps> = ({ source, style, resizeMode = 'cover' }) => {
-  const initialSource = useMemo(() => {
-    if (!source) return { uri: DEFAULT_SERVICE_IMAGE };
-    if (typeof source === 'string') return { uri: source };
-    return source;
-  }, [source]);
-
+  const initialSource = useMemo(() => getSafeImageSource(source), [source]);
   const [imgSource, setImgSource] = useState<ImageSourcePropType>(initialSource);
 
   useEffect(() => {
-    setImgSource(initialSource);
-  }, [initialSource]);
+    setImgSource(getSafeImageSource(source));
+  }, [source]);
 
   return (
     <Image
@@ -47,130 +46,16 @@ const SafeImage: React.FC<SafeImageProps> = ({ source, style, resizeMode = 'cove
       style={style}
       resizeMode={resizeMode}
       onError={() => {
-        // Fallback to default image when image fails to load
-        setImgSource({ uri: DEFAULT_SERVICE_IMAGE });
+        setImgSource(DEFAULT_SERVICE_IMAGE);
       }}
     />
   );
 };
 
-// --- Service list for animated placeholder ---
-const PLACEHOLDER_SERVICES = [
-  'Plumbing',
-  'Painting',
-  'Interior Decoration',
-  'Glass Works',
-  'Tiling',
-  'Smart Home Setup',
-  'Modular Kitchen',
-  'Bathroom Setup',
-  'Gardening',
-];
-
-// --- Animated Search Bar Component ---
-const AnimatedSearchBar = React.memo(({ searchQuery, handleSearch }: any) => {
-  const [localText, setLocalText] = useState(searchQuery);
-  const [currentPlaceholder, setCurrentPlaceholder] = useState(PLACEHOLDER_SERVICES[0]);
-  const [nextPlaceholder, setNextPlaceholder] = useState(PLACEHOLDER_SERVICES[1] || PLACEHOLDER_SERVICES[0]);
-
-  const currentSlideAnim = useRef(new Animated.Value(0)).current;
-  const currentFadeAnim = useRef(new Animated.Value(1)).current;
-  const nextSlideAnim = useRef(new Animated.Value(30)).current;
-  const nextFadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    setLocalText(searchQuery);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const nextIndex = (PLACEHOLDER_SERVICES.indexOf(currentPlaceholder) + 1) % PLACEHOLDER_SERVICES.length;
-      const newNext = PLACEHOLDER_SERVICES[nextIndex];
-      setNextPlaceholder(newNext);
-
-      Animated.parallel([
-        Animated.timing(currentSlideAnim, {
-          toValue: -30,
-          duration: 350,
-          useNativeDriver: true,
-        }),
-        Animated.timing(currentFadeAnim, {
-          toValue: 0,
-          duration: 350,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setCurrentPlaceholder(newNext);
-        currentSlideAnim.setValue(30);
-        currentFadeAnim.setValue(0);
-
-        Animated.parallel([
-          Animated.timing(currentSlideAnim, {
-            toValue: 0,
-            duration: 350,
-            useNativeDriver: true,
-          }),
-          Animated.timing(currentFadeAnim, {
-            toValue: 1,
-            duration: 350,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      });
-
-      nextSlideAnim.setValue(30);
-      nextFadeAnim.setValue(0);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [currentPlaceholder]);
-
-  const handleChangeText = useCallback(
-    (text: string) => {
-      setLocalText(text);
-      handleSearch(text);
-    },
-    [handleSearch]
-  );
-
-  const showAnimatedPlaceholder = localText.length === 0;
-
-  return (
-    <View style={styles.searchSection}>
-      <View style={styles.searchContainer}>
-        {showAnimatedPlaceholder && (
-          <Animated.Text
-            style={[
-              styles.animatedPlaceholder,
-              {
-                transform: [{ translateY: currentSlideAnim }],
-                opacity: currentFadeAnim,
-                position: 'absolute',
-                left: wp('10%'),
-                right: wp('4%'),
-              },
-            ]}
-            numberOfLines={1}
-          >
-            Search "{currentPlaceholder}"
-          </Animated.Text>
-        )}
-        <TextInput
-          style={[styles.searchInput, { paddingLeft: showAnimatedPlaceholder ? wp('10%') : wp('3%') }]}
-          placeholder=""
-          placeholderTextColor="#888"
-          value={localText}
-          onChangeText={handleChangeText}
-          clearButtonMode="while-editing"
-        />
-        <Ionicons name="search" size={28} color="#064E3B" style={styles.searchIcon} />
-      </View>
-    </View>
-  );
-});
-
-// --- Logic ---
-const topServices = servicesData2.filter((item) => item.id === 1 || item.id === 4);
+// --- Top Services: 3 Specific Items (1: Bathroom, 8: A/C, 14: Marble / Tile) ---
+const topServices = servicesData2
+  .filter((item) => item.id === 1 || item.id === 8 || item.id === 14)
+  .slice(0, 3);
 
 type ServiceItem = (typeof servicesData2)[0];
 type RowItem =
@@ -200,28 +85,12 @@ function buildRows(services: ServiceItem[]): RowItem[] {
 }
 
 export default function ServiceScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredServices, setFilteredServices] = useState(servicesData2);
+  const topServiceIds = useMemo(() => topServices.map((s) => s.id), []);
 
   const rows = useMemo(() => {
-    const trending =
-      searchQuery.trim() === ''
-        ? filteredServices.filter((item) => item.id !== 1 && item.id !== 4)
-        : filteredServices;
+    const trending = servicesData2.filter((item) => !topServiceIds.includes(item.id));
     return buildRows(trending);
-  }, [filteredServices, searchQuery]);
-
-  const handleSearch = useCallback((text: string) => {
-    setSearchQuery(text);
-    if (text.trim() === '') {
-      setFilteredServices(servicesData2);
-    } else {
-      const lowerText = text.toLowerCase();
-      setFilteredServices(
-        servicesData2.filter((item) => item.name.toLowerCase().includes(lowerText))
-      );
-    }
-  }, []);
+  }, [topServiceIds]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: RowItem; index: number }) => {
@@ -276,22 +145,19 @@ export default function ServiceScreen() {
     [rows.length]
   );
 
-  const searchBar = useMemo(
-    () => <AnimatedSearchBar searchQuery={searchQuery} handleSearch={handleSearch} />,
-    [searchQuery, handleSearch]
-  );
-
   const topServicesList = useMemo(
     () => (
       <View style={styles.topServicesWrapper}>
         {topServices.map((item) => (
           <ServicesCards
             key={item.id}
+            title={item.name}
             name={item.name}
             description={item.description}
             image={item.image || DEFAULT_SERVICE_IMAGE}
             question={item.question}
             answer={item.answer}
+            style={styles.topServiceCard}
             onPress={() =>
               router.push({
                 pathname: '/service/ServiceDetail',
@@ -305,16 +171,19 @@ export default function ServiceScreen() {
     []
   );
 
+  // Safe image header source handling
+  const headerImageSource = useMemo(() => getSafeImageSource(DEFAULT_SERVICE_IMAGE), []);
+
   const ListHeader = useMemo(
     () => (
       <View>
         <ImageBackground
-          source={{ uri: DEFAULT_SERVICE_IMAGE }}
+          source={headerImageSource}
           resizeMode="cover"
           style={styles.headerBackground}
         >
-          <LinearGradient colors={['rgba(0,0,0,0.08)', 'rgba(18,46,44,0.97)']} style={styles.headerGradient}>
-            <Text style={styles.headerTitle}>Welcome to Cleaning Sewa.</Text>
+          <LinearGradient colors={['rgba(18,46,44,0.35)', 'rgba(18,46,44,0.97)']} style={styles.headerGradient}>
+            <Text style={styles.headerTitle}> Professional Cleaning in Nepal</Text>
             <Text style={styles.headerSubtitle}>
               Your trusted cleaning partner from concept to completion, building homes with quality,
               transparency, and excellence across Nepal.
@@ -322,18 +191,14 @@ export default function ServiceScreen() {
           </LinearGradient>
         </ImageBackground>
 
-        {searchBar}
-
-        {searchQuery.trim() === '' && (
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle1}>Top Services</Text>
-            {topServicesList}
-            <Text style={styles.sectionTitle2}>Trending Services</Text>
-          </View>
-        )}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle1}>Top Services</Text>
+          {topServicesList}
+          <Text style={styles.sectionTitle2}>Trending Services</Text>
+        </View>
       </View>
     ),
-    [searchBar, searchQuery, topServicesList]
+    [headerImageSource, topServicesList]
   );
 
   return (
@@ -361,10 +226,11 @@ const styles = StyleSheet.create({
   },
   headerGradient: {
     position: 'absolute',
+    top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    height: '80%',
+    height: '100%',
     justifyContent: 'flex-end',
     paddingHorizontal: wp('4%'),
     paddingBottom: hp('2.5%'),
@@ -380,58 +246,22 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: 'rgba(255,255,255,0.85)',
   },
-  searchSection: {
-    paddingHorizontal: wp('4%'),
-    paddingVertical: hp('2%'),
-    backgroundColor: '#fff',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'hsl(0, 0%, 95%)',
-    borderRadius: 13,
-    paddingHorizontal: wp('3%'),
-    height: hp('5.5%'),
-    borderWidth: 1,
-    borderColor: '#ddd',
-    position: 'relative',
-  },
-  searchIcon: {
-    fontSize: wp('6.5%'),
-    marginRight: wp('1%'),
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: wp('3.8%'),
-    color: '#333',
-    height: '100%',
-    paddingHorizontal: wp('3%'),
-    letterSpacing: 0.7,
-    zIndex: 1,
-    backgroundColor: 'transparent',
-  },
-  animatedPlaceholder: {
-    fontSize: wp('3.8%'),
-    color: '#888',
-    letterSpacing: 0.7,
-    paddingLeft: wp('2%'),
-    zIndex: 0,
-  },
   sectionContainer: {
     paddingHorizontal: wp('4%'),
+    paddingTop: hp('2%'),
   },
   sectionTitle1: {
     fontSize: wp('4.6%'),
     fontWeight: '800',
     color: '#064E3B',
-    marginBottom: hp('2%'),
+    marginBottom: hp('1.5%'),
   },
   sectionTitle2: {
     fontSize: wp('4.6%'),
     fontWeight: '800',
     color: '#064E3B',
     marginBottom: hp('2.5%'),
-    marginTop: hp('-2%'),
+    marginTop: hp('1.5%'),
   },
   listContent: {
     paddingBottom: hp('4%'),
@@ -491,6 +321,13 @@ const styles = StyleSheet.create({
   },
   topServicesWrapper: {
     width: '100%',
-    paddingVertical: hp('1%'),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: hp('0.5%'),
+    marginBottom: hp('1%'),
+  },
+  topServiceCard: {
+    width: wp('28.5%'),
   },
 });

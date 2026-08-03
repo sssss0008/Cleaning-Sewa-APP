@@ -31,7 +31,7 @@ export default function Header2() {
           </View>
 
           <View style={styles.right}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.notificationButton}
               activeOpacity={0.7}
             >
@@ -40,7 +40,7 @@ export default function Header2() {
                 style={styles.rightIcon}
               />
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.menuButton}
               onPress={() =>
@@ -150,5 +150,5 @@ const styles = StyleSheet.create({
   menuButton: {
     padding: 4,
   },
- 
+
 });
