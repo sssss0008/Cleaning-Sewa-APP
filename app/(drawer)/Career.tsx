@@ -14,7 +14,7 @@ import {
 import { area, positionAppliedFor, services } from '../../src/data/Data';
 import TextArea from '../../components/bookings/TextArea';
 import SubmitOverlay from '../../components/bookings/SubmitOverlay';
-import countryLogo from '../../assets/header/right.png';
+import countryLogo from '../../assets/header/nepal-flag-icon-256.png';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
