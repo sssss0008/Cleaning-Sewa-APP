@@ -1,58 +1,74 @@
-import React, { createContext, useContext, useState } from 'react';
+@'
+import React, { createContext, useContext, useState, useMemo } from 'react';
 
 type Theme = 'light' | 'dark';
 
-export interface ThemeColors {
-  background: string;
-  text: string;
-  card: string;
-  border: string;
-  drawerBg: string;
-  drawerText: string;
-  primary: string;
-}
-
-const lightColors: ThemeColors = {
-  background: '#FFFFFF',
+// ---------- Color palettes ----------
+const lightColors = {
+  primary: '#0A7CFF',
+  subText: '#6B7280',
   text: '#111827',
-  card: '#F8FAFC',
-  border: '#E2E8F0',
+  background: '#FFFFFF',
+  card: '#F9FAFB',
+  border: '#E5E7EB',
   drawerBg: '#FFFFFF',
-  drawerText: '#1E293B',
-  primary: '#2563EB',
+  drawerBorder: 'rgba(0,0,0,0.08)',
+  danger: '#EF4444',
+  success: '#10B981',
 };
 
-const darkColors: ThemeColors = {
+const darkColors = {
+  primary: '#3B82F6',
+  subText: '#9CA3AF',
+  text: '#F9FAFB',
   background: '#0F172A',
-  text: '#F8FAFC',
   card: '#1E293B',
   border: '#334155',
   drawerBg: '#1E293B',
-  drawerText: '#F8FAFC',
-  primary: '#3B82F6',
+  drawerBorder: 'rgba(255,255,255,0.12)',
+  danger: '#F87171',
+  success: '#34D399',
 };
+
+export type AppColors = typeof lightColors;
 
 interface ThemeContextType {
   theme: Theme;
-  isDark: boolean;
-  colors: ThemeColors;
+  isDarkMode: boolean;
+  colors: AppColors;
   toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setThemeState] = useState<Theme>('light');
+
+  const isDarkMode = theme === 'dark';
+  const colors = isDarkMode ? darkColors : lightColors;
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  const isDark = theme === 'dark';
-  const colors = isDark ? darkColors : lightColors;
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+  };
+
+  const value = useMemo(
+    () => ({
+      theme,
+      isDarkMode,
+      colors,
+      toggleTheme,
+      setTheme,
+    }),
+    [theme, isDarkMode, colors]
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, colors, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
@@ -61,12 +77,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
+    // Safe fallback so the app doesn't crash if used outside provider
     return {
       theme: 'light' as Theme,
-      isDark: false,
+      isDarkMode: false,
       colors: lightColors,
       toggleTheme: () => {},
+      setTheme: () => {},
     };
   }
   return context;
 };
+'@ | Set-Content -Path "src/context/ThemeContext.tsx"
