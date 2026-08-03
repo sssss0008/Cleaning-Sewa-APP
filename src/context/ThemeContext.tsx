@@ -1,5 +1,4 @@
-@'
-import React, { createContext, useContext, useState, useMemo } from 'react';
+﻿import React, { createContext, useContext, useState, useMemo } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -88,4 +87,3 @@ export const useTheme = () => {
   }
   return context;
 };
-'@ | Set-Content -Path "src/context/ThemeContext.tsx"
