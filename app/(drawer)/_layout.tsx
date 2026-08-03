@@ -3,7 +3,7 @@ import { Drawer } from 'expo-router/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import CustomDrawer from '@/components/CustomDrawer';
 import { Dimensions, StyleSheet } from 'react-native';
-import { ThemeProvider, useTheme } from './ThemeContext';
+import { ThemeProvider, useTheme } from '../../src/context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
