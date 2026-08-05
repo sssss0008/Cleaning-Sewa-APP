@@ -1,1 +1,41 @@
 
+🚀 Release v1.0.0 — Backend Architecture & API Specifications
+We are excited to publish the complete Backend Architecture and API Specifications for the Cleaning Sewa / Career Application module.
+
+This release provides full technical specifications, database schemas, and Node.js REST API standards designed to support the React Native mobile application.
+
+📋 What's Included
+1. Database Schema (CareerApplication)
+Complete Mongoose / PostgreSQL data specifications.
+
+Strict validation rules for candidate details, Nepal phone formats (10 digits), position limits, and experience metrics.
+
+Structured array storage for document URLs (ID proofs, training certificates).
+
+2. API Endpoints
+POST /api/v1/careers/apply — Public application submission controller.
+
+POST /api/v1/files/upload — Multipart file upload handler with strict .jpg, .jpeg, and .png extension filters (5MB per file limit).
+
+GET /api/v1/careers — Administrative portal listing endpoint.
+
+3. Middleware & Security Features
+Input validation and payload sanitization via express-validator.
+
+Disk storage routing via multer.
+
+Error-handling pipeline and status code normalization.
+
+🛠️ Tech Stack Guidelines
+Runtime: Node.js (Express.js / NestJS)
+
+Database: MongoDB (Mongoose) or PostgreSQL (Prisma)
+
+File Storage: Local Static Server / AWS S3 / Cloudinary
+
+Authentication: JWT (JSON Web Tokens)
+
+📁 Repository Quick Reference
+Repository: SRIYOGconsulting/CleaningSewa-App
+
+Target Environment: Node.js v18+ / MongoDB v6+
