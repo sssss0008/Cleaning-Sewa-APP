@@ -10,6 +10,7 @@ import ClearFormIcon from '../../assets/icons/booking/clear.png';
 import DropdownAdd from '../../components/bookings/DropdownAdd';
 import Header3 from '../../components/Header3drawer';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { careerService } from '../../src/services/careerService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -86,7 +87,7 @@ export default function CareerScreen() {
     );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate required fields
     const isMissingRequiredFields =
       !name.trim() ||
@@ -126,10 +127,26 @@ export default function CareerScreen() {
     setOverlayStatus('loading');
     setOverlayVisible(true);
 
-    // Simulate API call and show success (Fix for BUG_005 feedback)
-    setTimeout(() => {
+    const result = await careerService.submitApplication({
+      full_name: name,
+      phone: number,
+      email: email,
+      position_applied: selectedExpertise.join(', '),
+      experience_years: parseInt(experience) || 0,
+      preferred_area: selectedArea,
+      emergency_contact: emergencyNumber,
+      cover_letter: coverMessage,
+      short_bio: message,
+      id_proof_urls: selectedID.map(f => f.uri), // Storage upload would happen first in production
+      certificate_urls: selectedCV.map(f => f.uri),
+    });
+
+    if (result.success) {
       setOverlayStatus('success');
-    }, 2000);
+    } else {
+      setOverlayVisible(false);
+      Alert.alert('Error', result.error || 'Failed to submit application.');
+    }
   };
 
   return (

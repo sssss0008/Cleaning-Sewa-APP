@@ -22,6 +22,7 @@ import {
 } from 'react-native-responsive-screen';
 import Header2 from '../../../components/Header2';
 import { Ionicons } from '@expo/vector-icons';
+import { feedbackService } from '../../../src/services/feedbackService';
 
 const ICON_SIZE = hp('3.3%');
 const MAP_URL = 'https://maps.app.goo.gl/A8qYWT5xucEgkEd69';
@@ -42,19 +43,24 @@ export default function ContactScreen() {
     Linking.openURL(MAP_URL);
   }, []);
 
-  const handleSendFeedback = () => {
+  const handleSendFeedback = async () => {
     if (!feedback.trim()) {
       Alert.alert('Empty Message', 'Please enter your feedback before sending.');
       return;
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    const result = await feedbackService.submitFeedback(feedback);
+
+    setIsSubmitting(false);
+
+    if (result.success) {
       Alert.alert('Thank You!', 'Your feedback has been received. We appreciate your input.');
       setFeedback('');
-    }, 1500);
+    } else {
+      Alert.alert('Error', result.error || 'Failed to send feedback.');
+    }
   };
 
   return (

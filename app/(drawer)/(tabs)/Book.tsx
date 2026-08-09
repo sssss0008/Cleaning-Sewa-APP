@@ -16,6 +16,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import * as ImagePicker from 'expo-image-picker';
 import Header2 from '../../../components/Header2';
 import { Ionicons } from '@expo/vector-icons';
+import { bookingService } from '../../../src/services/bookingService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -278,7 +279,7 @@ export default function ServiceBookingScreen() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateForm()) {
       const errorMsg = !agreedToTerms
         ? 'Please agree to the Terms and Conditions before submitting.'
@@ -288,11 +289,30 @@ export default function ServiceBookingScreen() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    const result = await bookingService.submitBooking({
+      full_name: fullName,
+      email: email,
+      phone: phone,
+      city: city,
+      landmark: landmark,
+      budget: budget,
+      service: service,
+      property_type: propertyType,
+      timing: timing,
+      lead_source: leadSource,
+      message: message,
+      image_url: imageUri || undefined, // In a real app, you'd upload to Storage first
+    });
+
+    setIsSubmitting(false);
+
+    if (result.success) {
       Alert.alert('Success 🎉', 'Your booking request has been submitted successfully.');
       clearForm();
-    }, 1500);
+    } else {
+      Alert.alert('Submission Error', result.error || 'Failed to submit booking. Please try again.');
+    }
   };
 
   return (

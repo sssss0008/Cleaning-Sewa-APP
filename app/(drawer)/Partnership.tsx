@@ -10,6 +10,7 @@ import ClearFormIcon from '../../assets/icons/booking/clear.png';
 import DropdownAdd from '../../components/bookings/DropdownAdd';
 import Header3 from '../../components/Header3drawer';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { partnershipService } from '../../src/services/partnershipService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -92,7 +93,7 @@ export default function PartnershipScreen() {
     );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate required fields
     const isMissingFields =
       !businessName.trim() ||
@@ -131,10 +132,26 @@ export default function PartnershipScreen() {
     setOverlayStatus('loading');
     setOverlayVisible(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    const result = await partnershipService.submitApplication({
+      business_name: businessName,
+      contact_person: contactPerson,
+      phone: number,
+      email: email,
+      business_type: selectedBusinessType,
+      years_in_operation: parseInt(yearsInOperation) || 0,
+      registration_number: registrationNumber,
+      coverage_area: selectedArea,
+      interest_duration: selectedInterest.join(', '),
+      proposal: proposalMessage,
+      document_urls: [...businessDocuments, ...companyProfile].map(f => f.uri),
+    });
+
+    if (result.success) {
       setOverlayStatus('success');
-    }, 2000);
+    } else {
+      setOverlayVisible(false);
+      Alert.alert('Error', result.error || 'Failed to submit partnership application.');
+    }
   };
 
   return (
