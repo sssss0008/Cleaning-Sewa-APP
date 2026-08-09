@@ -1,11 +1,30 @@
-import { TouchableOpacity, StyleSheet, View, Image, Text, StatusBar } from 'react-native';
+import React from 'react';
+import { TouchableOpacity, StyleSheet, View, Image, Text, StatusBar, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { DrawerActions } from '@react-navigation/native';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Header2() {
   const navigation = useNavigation<any>();
+
+  const openWhatsApp = async () => {
+    const phoneNumber = '977981152774';
+    const whatsappUrl = `whatsapp://send?phone=${phoneNumber}`;
+    const browserUrl = `https://wa.me/${phoneNumber}`;
+
+    try {
+      const supported = await Linking.canOpenURL(whatsappUrl);
+      if (supported) {
+        await Linking.openURL(whatsappUrl);
+      } else {
+        await Linking.openURL(browserUrl);
+      }
+    } catch (error) {
+      Linking.openURL(browserUrl).catch(() => {
+        Alert.alert('Error', 'Failed to open WhatsApp');
+      });
+    }
+  };
 
   return (
     <>
@@ -34,6 +53,7 @@ export default function Header2() {
             <TouchableOpacity
               style={styles.notificationButton}
               activeOpacity={0.7}
+              onPress={openWhatsApp}
             >
               <Image
                 source={require('../assets/whatsapp.png')}
@@ -48,7 +68,7 @@ export default function Header2() {
               }
               activeOpacity={0.8}
             >
-              <View >
+              <View>
                 <Ionicons name="menu" size={35} color='#fff' />
               </View>
             </TouchableOpacity>
@@ -65,10 +85,7 @@ const styles = StyleSheet.create({
     paddingTop: 45,
     paddingBottom: 8,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
@@ -123,24 +140,10 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
-  subtitle: {
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.7)',
-    fontWeight: '500',
-    letterSpacing: 0.3,
-    marginTop: -2,
-  },
   notificationButton: {
     position: 'relative',
     padding: 8,
     borderRadius: 20,
-  },
-
-  badgeText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '700',
-    paddingHorizontal: 4,
   },
   rightIcon: {
     width: 30,
@@ -150,5 +153,4 @@ const styles = StyleSheet.create({
   menuButton: {
     padding: 4,
   },
-
 });

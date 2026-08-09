@@ -14,7 +14,8 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import * as ImagePicker from 'expo-image-picker';
-import Header2 from '@/components/Header2';
+import Header2 from '../../../components/Header2';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -110,6 +111,7 @@ export default function ServiceBookingScreen() {
   const [timing, setTiming] = useState('');
   const [leadSource, setLeadSource] = useState('');
   const [message, setMessage] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Image Upload State
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -213,6 +215,7 @@ export default function ServiceBookingScreen() {
     setLeadSource('');
     setMessage('');
     setImageUri(null);
+    setAgreedToTerms(false);
     setErrors({});
   };
 
@@ -267,16 +270,20 @@ export default function ServiceBookingScreen() {
       newErrors.leadSource = 'Please tell us how you found us';
     }
 
+    if (!agreedToTerms) {
+      newErrors.agreedToTerms = 'You must agree to the Terms and Conditions';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     if (!validateForm()) {
-      Alert.alert(
-        'Validation Error',
-        'Please correct the highlighted fields before submitting.'
-      );
+      const errorMsg = !agreedToTerms
+        ? 'Please agree to the Terms and Conditions before submitting.'
+        : 'Please correct the highlighted fields before submitting.';
+      Alert.alert('Validation Error', errorMsg);
       return;
     }
 
@@ -481,6 +488,25 @@ export default function ServiceBookingScreen() {
             placeholder="Type any additional requirements here..."
             placeholderTextColor="#9CA3AF"
           />
+
+          {/* Terms and Conditions Checkbox (SUG_001) */}
+          <TouchableOpacity
+            style={styles.termsRow}
+            activeOpacity={0.7}
+            onPress={() => {
+              setAgreedToTerms(!agreedToTerms);
+              clearError('agreedToTerms');
+            }}
+          >
+            <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+              {agreedToTerms && <Ionicons name="checkmark" size={14} color="#FFF" />}
+            </View>
+            <Text style={styles.termsText}>
+              I agree to the <Text style={styles.linkText}>Terms and Conditions</Text>
+              <Text style={styles.asterisk}> *</Text>
+            </Text>
+          </TouchableOpacity>
+          {errors.agreedToTerms && <Text style={styles.errorText}>{errors.agreedToTerms}</Text>}
 
           {/* Footer Action Bar */}
           <View style={styles.actionFooterRow}>
@@ -723,6 +749,34 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     backgroundColor: '#FFF',
     textAlignVertical: 'top',
+  },
+  termsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    paddingHorizontal: 2,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    borderRadius: 4,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#064E3B',
+    borderColor: '#064E3B',
+  },
+  termsText: {
+    fontSize: 13,
+    color: '#374151',
+  },
+  linkText: {
+    color: '#064E3B',
+    fontWeight: '700',
   },
   actionFooterRow: {
     flexDirection: 'row',

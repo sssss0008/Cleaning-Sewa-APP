@@ -1,7 +1,7 @@
 import React from 'react';
 import { Drawer } from 'expo-router/drawer';
 import { Ionicons } from '@expo/vector-icons';
-import CustomDrawer from '@/components/CustomDrawer';
+import CustomDrawer from '../../components/CustomDrawer';
 import { Dimensions, StyleSheet } from 'react-native';
 import { ThemeProvider, useTheme } from '../../src/context/ThemeContext';
 
@@ -29,19 +29,6 @@ function DrawerNavigator() {
         overlayColor: isDarkMode ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.45)',
       }}
     >
-      {/* 1. Glossary (Placed directly ABOVE Home) */}
-      <Drawer.Screen
-        name="Glossary"
-        options={{
-          drawerLabel: 'Glossary',
-          title: 'Glossary',
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="book-outline" size={size} color={color} />
-          ),
-        }}
-      />
-
-      {/* 2. Main Tabs (Home Screen) */}
       <Drawer.Screen
         name="(tabs)"
         options={{
@@ -53,7 +40,6 @@ function DrawerNavigator() {
         }}
       />
 
-      {/* 3. Admin Portal */}
       <Drawer.Screen
         name="Admin"
         options={{
@@ -65,7 +51,6 @@ function DrawerNavigator() {
         }}
       />
 
-      {/* 4. FAQs */}
       <Drawer.Screen
         name="FAQs"
         options={{
@@ -77,7 +62,6 @@ function DrawerNavigator() {
         }}
       />
 
-      {/* 5. Partnership */}
       <Drawer.Screen
         name="Partnership"
         options={{
@@ -89,7 +73,6 @@ function DrawerNavigator() {
         }}
       />
 
-      {/* 6. Career */}
       <Drawer.Screen
         name="Career"
         options={{
@@ -97,6 +80,39 @@ function DrawerNavigator() {
           title: 'Career',
           drawerIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Drawer.Screen
+        name="PrivacyPolicy"
+        options={{
+          drawerLabel: 'Privacy Policy',
+          title: 'Privacy Policy',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="shield-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Drawer.Screen
+        name="RefundPolicy"
+        options={{
+          drawerLabel: 'Refund Policy',
+          title: 'Refund Policy',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="refresh-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Drawer.Screen
+        name="Glossary"
+        options={{
+          drawerLabel: 'Glossary',
+          title: 'Glossary',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="book-outline" size={size} color={color} />
           ),
         }}
       />

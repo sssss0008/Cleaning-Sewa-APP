@@ -1,11 +1,31 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, View, Image, Text, StatusBar } from 'react-native';
+import { TouchableOpacity, StyleSheet, View, Image, Text, StatusBar, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Header2() {
   const navigation = useNavigation<any>();
+
+  // WhatsApp Handler Function
+  const openWhatsApp = async () => {
+    const phoneNumber = '977981152774'; // Full number with country code
+    const message = 'Hello Cleaning Sewa, I would like to inquire about your services.';
+    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+    const webUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        // Fallback to web browser if WhatsApp app is not installed
+        await Linking.openURL(webUrl);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Unable to open WhatsApp.');
+    }
+  };
 
   return (
     <>
@@ -31,9 +51,11 @@ export default function Header2() {
           </View>
 
           <View style={styles.right}>
+            {/* WhatsApp Button connected to openWhatsApp */}
             <TouchableOpacity
               style={styles.notificationButton}
               activeOpacity={0.7}
+              onPress={openWhatsApp}
             >
               <Image
                 source={require('../assets/whatsapp.png')}

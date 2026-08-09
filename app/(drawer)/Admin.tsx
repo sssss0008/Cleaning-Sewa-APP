@@ -299,6 +299,15 @@ export default function AdminScreen() {
           )}
 
           <TouchableOpacity
+            style={styles.joinNowLink}
+            onPress={() => router.push('/(drawer)/Career')}
+          >
+            <Text style={styles.joinNowText}>
+              Don't have an account? <Text style={styles.joinNowBold}>Join Now</Text>
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.backHomeBtn}
             onPress={() => router.replace('/(drawer)/(tabs)/Home')}
           >
@@ -589,6 +598,20 @@ const styles = StyleSheet.create({
 
   backHomeBtn: { marginTop: hp('2%'), alignItems: 'center' },
   backHomeText: { color: '#295C59', fontWeight: '600', fontSize: wp('3.5%') },
+
+  joinNowLink: {
+    marginTop: hp('3%'),
+    alignItems: 'center',
+  },
+  joinNowText: {
+    fontSize: wp('3.5%'),
+    color: '#4B5563',
+  },
+  joinNowBold: {
+    color: '#064E3B',
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
 
   /* ADMIN DASHBOARD HEADER */
   adminDashboardHeader: {

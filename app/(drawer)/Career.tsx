@@ -1,42 +1,29 @@
 import React, { useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  Image,
-  Pressable,
-  Alert,
-  Platform,
-} from 'react-native';
-import { area, positionAppliedFor, services } from '../../src/data/Data';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image, Pressable, Alert, Platform } from 'react-native';
+import { area, positionAppliedFor } from '../../src/data/Data';
 import TextArea from '../../components/bookings/TextArea';
 import SubmitOverlay from '../../components/bookings/SubmitOverlay';
 import countryLogo from '../../assets/header/nepal-flag-icon-256.png';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import FileUploadBox from '../../components/bookings/FileUploadBox';
-import ClearFormIcon from '../../assets/icons/booking/clear.png'
+import ClearFormIcon from '../../assets/icons/booking/clear.png';
 import DropdownAdd from '../../components/bookings/DropdownAdd';
-import Header3 from '@/components/Header3drawer';
+import Header3 from '../../components/Header3drawer';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const { width, height } = Dimensions.get('window');
 
-const Button = ({ children, style, textStyle, onPress }: any) => {
+interface ButtonProps {
+  children: React.ReactNode;
+  style?: any;
+  textStyle?: any;
+  onPress: () => void;
+}
+
+const Button = ({ children, style, textStyle, onPress }: ButtonProps) => {
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.85}
-      style={style}
-    >
-      <Text style={[styles.text, textStyle]}>
-        {children}
-      </Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={style}>
+      <Text style={[styles.text, textStyle]}> {children} </Text>
     </TouchableOpacity>
   );
 };
@@ -47,28 +34,22 @@ export type FileItem = {
 };
 
 export default function CareerScreen() {
-  const scrollRef = useRef<any>(null);
-
+  const scrollRef = useRef<KeyboardAwareScrollView>(null);
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-
   const [experience, setExperience] = useState('');
   const [emergencyNumber, setEmergencyNumber] = useState('');
   const [coverMessage, setCoverMessage] = useState('');
-
   // photos
   const [selectedCV, setSelectedCV] = useState<FileItem[]>([]);
   const [selectedID, setSelectedID] = useState<FileItem[]>([]);
-
   // dropdown states
   const [selectedExpertise, setSelectedExpertise] = useState<string[]>([]);
   const [selectedArea, setSelectedArea] = useState<string[]>([]);
-
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayStatus, setOverlayStatus] = useState<'loading' | 'success'>('loading');
-
   // Shared active focus state system mapping layout changes
   const [activeInput, setActiveInput] = useState<string | null>(null);
 
@@ -99,24 +80,44 @@ export default function CareerScreen() {
       'Clear Form',
       'Are you sure you want to clear all fields?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Yes, Clear',
-          style: 'destructive',
-          onPress: clearAllFields,
-        },
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Yes, Clear', style: 'destructive', onPress: clearAllFields },
       ]
     );
   };
 
   const handleSubmit = () => {
+    // Validate required fields
+    const isMissingRequiredFields =
+      !name.trim() ||
+      !number.trim() ||
+      !email.trim() ||
+      selectedExpertise.length === 0 ||
+      !experience.trim() ||
+      selectedID.length === 0 ||
+      selectedArea.length === 0 ||
+      !emergencyNumber.trim() ||
+      !coverMessage.trim() ||
+      !message.trim();
+
+    if (isMissingRequiredFields) {
+      Alert.alert(
+        'Required Fields Missing',
+        'Please fill in all required fields marked with an asterisk (*) before submitting.'
+      );
+      return;
+    }
+
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
     // Check files before submitting
     const allFiles = [...selectedID, ...selectedCV];
     const invalidFiles = allFiles.filter(file => !isJpgOrPng(file));
-
     if (invalidFiles.length > 0) {
       Alert.alert('Invalid File Type', 'Please upload only .jpg or .png images.');
       return;
@@ -124,7 +125,11 @@ export default function CareerScreen() {
 
     setOverlayStatus('loading');
     setOverlayVisible(true);
-    // Proceed with form submission logic
+
+    // Simulate API call and show success (Fix for BUG_005 feedback)
+    setTimeout(() => {
+      setOverlayStatus('success');
+    }, 2000);
   };
 
   return (
@@ -133,7 +138,10 @@ export default function CareerScreen() {
       <SubmitOverlay
         visible={overlayVisible}
         status={overlayStatus}
-        onClear={() => { clearAllFields(); setOverlayVisible(false); }}
+        onClear={() => {
+          clearAllFields();
+          setOverlayVisible(false);
+        }}
         onClose={() => setOverlayVisible(false)}
       />
       <KeyboardAwareScrollView
@@ -149,7 +157,6 @@ export default function CareerScreen() {
       >
         <View style={[styles.formContainer, { marginBottom: hp('5%') }]}>
           <Text style={styles.title}>Join Now</Text>
-
           <View style={styles.spacerGap} />
 
           {/* Full Name */}
@@ -166,6 +173,7 @@ export default function CareerScreen() {
             ]}
             placeholderTextColor={'#4B4B4B'}
             maxLength={30}
+            autoCapitalize="words"
           />
 
           {/* Phone Number (Full Nepal Flag) */}
@@ -185,16 +193,10 @@ export default function CareerScreen() {
                 let cleaned = value.replace(/[^0-9]/g, '');
                 cleaned = cleaned.slice(0, 10);
                 let formatted = cleaned;
-
                 if (cleaned.length > 3 && cleaned.length <= 6) {
                   formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3);
                 } else if (cleaned.length > 6) {
-                  formatted =
-                    cleaned.slice(0, 3) +
-                    ' ' +
-                    cleaned.slice(3, 6) +
-                    ' ' +
-                    cleaned.slice(6);
+                  formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3, 6) + ' ' + cleaned.slice(6);
                 }
                 setNumber(formatted);
               }}
@@ -221,12 +223,14 @@ export default function CareerScreen() {
               activeInput === 'email' && styles.inputActive
             ]}
             placeholderTextColor={'#4B4B4B'}
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
 
           {/* Area of Expertise */}
           <Text style={styles.label}>Position Applied For<Text style={{ color: 'red' }}>*</Text></Text>
           <DropdownAdd
-            options={services}
+            options={positionAppliedFor}
             placeholder="Select the position you are applying for"
             placeholderColor="#4B4B4B"
             value={selectedExpertise}
@@ -261,7 +265,6 @@ export default function CareerScreen() {
             value={selectedID}
             onChange={setSelectedID}
             maxFiles={5}
-            allowedExtensions={['jpg', 'jpeg', 'png']}
           />
 
           {/* Preferred Working Area */}
@@ -294,16 +297,10 @@ export default function CareerScreen() {
                 let cleaned = value.replace(/[^0-9]/g, '');
                 cleaned = cleaned.slice(0, 10);
                 let formatted = cleaned;
-
                 if (cleaned.length > 3 && cleaned.length <= 6) {
                   formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3);
                 } else if (cleaned.length > 6) {
-                  formatted =
-                    cleaned.slice(0, 3) +
-                    ' ' +
-                    cleaned.slice(3, 6) +
-                    ' ' +
-                    cleaned.slice(6);
+                  formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3, 6) + ' ' + cleaned.slice(6);
                 }
                 setEmergencyNumber(formatted);
               }}
@@ -323,7 +320,6 @@ export default function CareerScreen() {
             value={selectedCV}
             onChange={setSelectedCV}
             maxFiles={10}
-            allowedExtensions={['jpg', 'jpeg', 'png']}
           />
 
           {/* Cover Letter */}
@@ -358,7 +354,6 @@ export default function CareerScreen() {
               <Image source={ClearFormIcon} style={styles.clearIcon} />
               <Text style={styles.buttonClear}>Clear form</Text>
             </Pressable>
-
             <Button
               style={styles.buttonSubmit}
               onPress={handleSubmit}
@@ -412,10 +407,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center',
     marginBottom: height * 0.02,
+    width: '100%',
   },
   flagIcon: {
-    width: wp('7%'),
-    height: hp('3.8%'),
+    width: wp('4.5%'),
+    height: hp('2.5%'),
     position: 'absolute',
     left: wp('3%'),
     zIndex: 2,
@@ -433,8 +429,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderColor: '#E2E8F0',
     height: height * 0.055,
-    paddingLeft: wp('13.5%'),
-    paddingRight: 10,
+    width: '100%',
+    paddingLeft: wp('10%'),
+    paddingRight: wp('3.5%'),
     fontSize: width * 0.035,
     fontWeight: '500',
     color: '#1A1A1A',

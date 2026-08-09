@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   Platform,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, usePathname } from 'expo-router';
@@ -17,17 +18,16 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp
 } from 'react-native-responsive-screen';
+import { useTheme } from '../src/context/ThemeContext';
 
 export default function CustomDrawer(_props: DrawerContentComponentProps) {
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
+  const { isDarkMode, toggleTheme, colors: themeColors } = useTheme();
 
   const isActive = (route: string) => pathname === route;
 
   const navigateTo = (route: any) => {
     _props.navigation.closeDrawer();
-
     requestAnimationFrame(() => {
       setTimeout(() => {
         try {
@@ -40,36 +40,15 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
     });
   };
 
-  const handleLogout = async () => {
-    try {
-      _props.navigation.closeDrawer();
-      setIsLoggedIn(false);
-      setRole(null);
-
-      Alert.alert(
-        "Session Ended",
-        "You have been securely signed out. See you again soon! 👋",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              requestAnimationFrame(() => {
-                router.replace('/Home');
-              });
-            }
-          }
-        ]
-      );
-    } catch (error: any) {
-      Alert.alert("Logout Failed", "We encountered an issue signing you out. Please try again.");
-    }
+  const openSocial = (url: string) => {
+    Linking.openURL(url).catch(() => Alert.alert('Error', 'Could not open social media link'));
   };
 
   return (
-    <SafeAreaView style={styles.wrapper} edges={['top', 'bottom']}>
-      <View style={styles.card}>
+    <SafeAreaView style={[styles.wrapper, { backgroundColor: 'transparent' }]} edges={['top', 'bottom']}>
+      <View style={[styles.card, { backgroundColor: themeColors.drawerBg }]}>
 
-        {/* PROFILE SECTION (LOGO ON THE LEFT SIDE) */}
+        {/* PROFILE SECTION */}
         <View style={styles.profileBox}>
           <Image
             source={require('../assets/images/icon.png')}
@@ -77,10 +56,19 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
           />
           <View style={styles.profileInfo}>
             <Text style={styles.name} numberOfLines={1}>CleaningSewa</Text>
-            <Text style={styles.firebaseAuthText} numberOfLines={1} ellipsizeMode="tail">
+            <Text style={styles.firebaseAuthText} numberOfLines={1}>
               Guest User
             </Text>
           </View>
+
+          {/* THEME TOGGLE (SUG_003) */}
+          <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle}>
+             <Ionicons
+               name={isDarkMode ? "sunny" : "moon"}
+               size={wp('6%')}
+               color="#FFF"
+             />
+          </TouchableOpacity>
         </View>
 
         {/* MENU */}
@@ -88,7 +76,6 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.menu}
         >
-          {/* TOP SECTION */}
           <MenuItem
             icon={isActive('/Home') ? "home" : "home-outline"}
             label="Home"
@@ -115,14 +102,13 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
           />
           <MenuItem
             icon={isActive('/Contact') ? "call" : "call-outline"}
-            label="Contact"
+            label="Contact & Support"
             active={isActive('/Contact')}
             onPress={() => navigateTo('/Contact')}
           />
 
           <View style={styles.divider} />
 
-          {/* MIDDLE SECTION */}
           <MenuItem
             icon={isActive('/Partnership') ? "people" : "people-outline"}
             label="Become a Partner"
@@ -141,24 +127,49 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
             active={isActive('/FAQs')}
             onPress={() => navigateTo('/FAQs')}
           />
+
+          <View style={styles.divider} />
+
+          {/* POLICY PAGES (SUG_004, SUG_007) */}
           <MenuItem
-            icon={isActive('/Glossary') ? "book" : "book-outline"}
-            label="Glossary"
-            active={isActive('/Glossary')}
-            onPress={() => navigateTo('/Glossary')}
+            icon={isActive('/PrivacyPolicy') ? "shield-checkmark" : "shield-checkmark-outline"}
+            label="Privacy Policy"
+            active={isActive('/PrivacyPolicy')}
+            onPress={() => navigateTo('/PrivacyPolicy')}
+          />
+          <MenuItem
+            icon={isActive('/RefundPolicy') ? "refresh-circle" : "refresh-circle-outline"}
+            label="Refund Policy"
+            active={isActive('/RefundPolicy')}
+            onPress={() => navigateTo('/RefundPolicy')}
           />
 
           <View style={styles.dividerAdmin} />
 
           {/* ADMIN LOGIN */}
           <MenuItem
-            icon={isActive('/Admin') ? "shield-checkmark" : "shield-checkmark-outline"}
+            icon={isActive('/Admin') ? "lock-closed" : "lock-closed-outline"}
             label="Admin Login"
             active={isActive('/Admin')}
             onPress={() => navigateTo('/Admin')}
           />
-        </ScrollView>
 
+          {/* SOCIAL MEDIA HANDLES (SUG_008) */}
+          <View style={styles.socialContainer}>
+            <Text style={styles.socialText}>Follow Us</Text>
+            <View style={styles.socialIcons}>
+              <TouchableOpacity onPress={() => openSocial('https://facebook.com/cleaningsewa')}>
+                <Ionicons name="logo-facebook" size={wp('6%')} color="#3b5998" style={styles.socialIcon} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => openSocial('https://instagram.com/cleaningsewa')}>
+                <Ionicons name="logo-instagram" size={wp('6%')} color="#C13584" style={styles.socialIcon} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => openSocial('https://tiktok.com/@cleaningsewa')}>
+                <Ionicons name="logo-tiktok" size={wp('6%')} color="#000000" style={styles.socialIcon} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -175,12 +186,13 @@ type MenuItemProps = {
 
 const MenuItem = React.memo(({ icon, label, onPress, active, isLogout }: MenuItemProps) => {
   const isAdminButton = label === "Admin Login";
+  const { colors: themeColors } = useTheme();
 
   const getIconColor = () => {
     if (active) return '#059669';
     if (isLogout) return '#EF4444';
     if (isAdminButton) return '#FFFFFF';
-    return '#6B7280';
+    return themeColors.subText;
   };
 
   return (
@@ -207,7 +219,8 @@ const MenuItem = React.memo(({ icon, label, onPress, active, isLogout }: MenuIte
         styles.label,
         active && styles.labelActive,
         isLogout && styles.labelLogout,
-        isAdminButton && styles.adminButtonText
+        isAdminButton && styles.adminButtonText,
+        { color: isAdminButton ? '#FFF' : active ? '#047857' : themeColors.text }
       ]}>
         {label}
       </Text>
@@ -218,13 +231,12 @@ const MenuItem = React.memo(({ icon, label, onPress, active, isLogout }: MenuIte
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: 'transparent'
   },
   card: {
     flex: 1,
-    backgroundColor: '#fff',
     borderRadius: wp('6%'),
-    margin: wp('2.5%'),
+    marginHorizontal: wp('2.5%'),
+    marginVertical: hp('1%'),
     overflow: 'hidden',
     ...Platform.select({
       ios: {
@@ -240,16 +252,16 @@ const styles = StyleSheet.create({
   },
   profileBox: {
     backgroundColor: '#064E3B',
-    paddingVertical: hp('2.5%'),
+    paddingVertical: hp('2%'),
     paddingHorizontal: wp('4.5%'),
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: hp('1.5%')
+    marginBottom: hp('1%')
   },
   avatar: {
-    width: wp('13%'),
-    height: wp('13%'),
-    borderRadius: wp('6.5%'),
+    width: wp('12%'),
+    height: wp('12%'),
+    borderRadius: wp('6%'),
     marginRight: wp('3.5%')
   },
   profileInfo: {
@@ -261,7 +273,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
     textAlign: 'left',
-    marginBottom: hp('0.2%')
+    marginBottom: hp('0.1%')
   },
   firebaseAuthText: {
     fontSize: wp('2.8%'),
@@ -269,9 +281,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'left'
   },
+  themeToggle: {
+    padding: 8,
+  },
   menu: {
     paddingHorizontal: wp('3.5%'),
-    paddingBottom: hp('3%'),
+    paddingBottom: hp('2%'),
     paddingTop: hp('0.5%')
   },
   item: {
@@ -282,21 +297,9 @@ const styles = StyleSheet.create({
     borderRadius: wp('3%'),
     marginBottom: hp('0.5%'),
     position: 'relative',
-    backgroundColor: 'transparent',
   },
   itemActive: {
     backgroundColor: '#ECFDF5',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#059669',
-        shadowOffset: { width: 0, height: hp('0.2%') },
-        shadowOpacity: 0.05,
-        shadowRadius: wp('1%'),
-      },
-      android: {
-        elevation: 1,
-      }
-    })
   },
   activeIndicator: {
     position: 'absolute',
@@ -315,10 +318,8 @@ const styles = StyleSheet.create({
     marginLeft: wp('4%'),
     fontSize: wp('3.5%'),
     fontWeight: '500',
-    color: '#4B5563'
   },
   labelActive: {
-    color: '#047857',
     fontWeight: '700'
   },
   labelLogout: {
@@ -345,22 +346,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: hp('1.5%'),
     marginTop: hp('0.5%'),
-    ...Platform.select({
-      ios: {
-        shadowColor: '#064E3B',
-        shadowOffset: { width: 0, height: hp('0.5%') },
-        shadowOpacity: 0.3,
-        shadowRadius: wp('2%'),
-      },
-      android: {
-        elevation: 4,
-      }
-    })
   },
   adminButtonText: {
-    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: wp('3.5%'),
     marginLeft: wp('2%'),
+  },
+  socialContainer: {
+    marginTop: hp('3%'),
+    alignItems: 'center',
+    paddingBottom: hp('2%'),
+  },
+  socialText: {
+    fontSize: wp('3.2%'),
+    color: '#9CA3AF',
+    marginBottom: hp('1%'),
+    fontWeight: '600',
+  },
+  socialIcons: {
+    flexDirection: 'row',
+    gap: wp('6%'),
+  },
+  socialIcon: {
+    opacity: 0.8,
   },
 });

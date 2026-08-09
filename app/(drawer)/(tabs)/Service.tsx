@@ -8,14 +8,16 @@ import {
   Image,
   ImageBackground,
   ImageSourcePropType,
+  TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { Ionicons } from '@expo/vector-icons';
 
 import ServicesCards from '../../../components/services/ServicesCards';
 import ServicesDisplaycard from '../../../components/services/ServicesDisplaycard';
-import Header2 from '@/components/Header2';
+import Header2 from '../../../components/Header2';
 import { servicesData2, DEFAULT_SERVICE_IMAGE } from '../../../src/data/ServiceData';
 
 // --- Safe Image Helper Function ---
@@ -52,8 +54,8 @@ const SafeImage: React.FC<SafeImageProps> = ({ source, style, resizeMode = 'cove
   );
 };
 
-// --- Top Services: 3 Specific Items (1: Bathroom, 8: A/C, 14: Marble / Tile) ---
-const topServices = servicesData2
+// --- Top Services: 3 Specific Items ---
+const topServicesList = servicesData2
   .filter((item) => item.id === 1 || item.id === 8 || item.id === 14)
   .slice(0, 3);
 
@@ -85,12 +87,33 @@ function buildRows(services: ServiceItem[]): RowItem[] {
 }
 
 export default function ServiceScreen() {
-  const topServiceIds = useMemo(() => topServices.map((s) => s.id), []);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredServices = useMemo(() => {
+    if (!searchQuery.trim()) return servicesData2;
+    return servicesData2.filter(service =>
+      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      service.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  const topServiceIds = useMemo(() => topServicesList.map((s) => s.id), []);
 
   const rows = useMemo(() => {
+    // If searching, we show all filtered results as pairs, no featured logic for simplicity in results
+    if (searchQuery.trim()) {
+      const results: RowItem[] = [];
+      for (let i = 0; i < filteredServices.length; i += 2) {
+        const pair = [filteredServices[i]];
+        if (i + 1 < filteredServices.length) pair.push(filteredServices[i + 1]);
+        results.push({ type: 'pair', items: pair, key: `search-pair-${i}` });
+      }
+      return results;
+    }
+
     const trending = servicesData2.filter((item) => !topServiceIds.includes(item.id));
     return buildRows(trending);
-  }, [topServiceIds]);
+  }, [filteredServices, topServiceIds, searchQuery]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: RowItem; index: number }) => {
@@ -145,33 +168,6 @@ export default function ServiceScreen() {
     [rows.length]
   );
 
-  const topServicesList = useMemo(
-    () => (
-      <View style={styles.topServicesWrapper}>
-        {topServices.map((item) => (
-          <ServicesCards
-            key={item.id}
-            title={item.name}
-            name={item.name}
-            description={item.description}
-            image={item.image || DEFAULT_SERVICE_IMAGE}
-            question={item.question}
-            answer={item.answer}
-            style={styles.topServiceCard}
-            onPress={() =>
-              router.push({
-                pathname: '/service/ServiceDetail',
-                params: { id: item.id.toString() },
-              })
-            }
-          />
-        ))}
-      </View>
-    ),
-    []
-  );
-
-  // Safe image header source handling
   const headerImageSource = useMemo(() => getSafeImageSource(DEFAULT_SERVICE_IMAGE), []);
 
   const ListHeader = useMemo(
@@ -191,14 +187,66 @@ export default function ServiceScreen() {
           </LinearGradient>
         </ImageBackground>
 
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle1}>Top Services</Text>
-          {topServicesList}
-          <Text style={styles.sectionTitle2}>Trending Services</Text>
+        <View style={styles.searchSection}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color="#6B7280" />
+            <TextInput
+              placeholder="Search for a service..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.searchInput}
+              placeholderTextColor="#9CA3AF"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
+
+        {!searchQuery && (
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle1}>Top Services</Text>
+            <View style={styles.topServicesWrapper}>
+              {topServicesList.map((item) => (
+                <ServicesCards
+                  key={item.id}
+                  title={item.name}
+                  name={item.name}
+                  description={item.description}
+                  image={item.image || DEFAULT_SERVICE_IMAGE}
+                  question={item.question}
+                  answer={item.answer}
+                  style={styles.topServiceCard}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/service/ServiceDetail',
+                      params: { id: item.id.toString() },
+                    })
+                  }
+                />
+              ))}
+            </View>
+            <Text style={styles.sectionTitle2}>Trending Services</Text>
+          </View>
+        )}
+
+        {searchQuery && filteredServices.length > 0 && (
+          <View style={styles.sectionContainer}>
+             <Text style={styles.sectionTitle2}>Search Results ({filteredServices.length})</Text>
+          </View>
+        )}
+
+        {searchQuery && filteredServices.length === 0 && (
+          <View style={styles.emptyResults}>
+             <Ionicons name="search-outline" size={64} color="#E5E7EB" />
+             <Text style={styles.emptyResultsText}>No services found matching "{searchQuery}"</Text>
+          </View>
+        )}
       </View>
     ),
-    [headerImageSource, topServicesList]
+    [headerImageSource, searchQuery, filteredServices.length]
   );
 
   return (
@@ -221,7 +269,7 @@ export default function ServiceScreen() {
 const styles = StyleSheet.create({
   headerBackground: {
     width: wp('100%'),
-    height: hp('28%'),
+    height: hp('26%'),
     overflow: 'hidden',
   },
   headerGradient: {
@@ -233,22 +281,46 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'flex-end',
     paddingHorizontal: wp('4%'),
-    paddingBottom: hp('2.5%'),
+    paddingBottom: hp('2%'),
     gap: 4,
   },
   headerTitle: {
-    fontSize: wp('6.8%'),
+    fontSize: wp('6%'),
     fontWeight: '800',
     color: '#fff',
   },
   headerSubtitle: {
-    fontSize: wp('3.8%'),
+    fontSize: wp('3.5%'),
     fontWeight: '500',
     color: 'rgba(255,255,255,0.85)',
   },
+  searchSection: {
+    paddingHorizontal: wp('4%'),
+    marginTop: -hp('2.5%'),
+    zIndex: 10,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 50,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#1F2937',
+  },
   sectionContainer: {
     paddingHorizontal: wp('4%'),
-    paddingTop: hp('2%'),
+    paddingTop: hp('3%'),
   },
   sectionTitle1: {
     fontSize: wp('4.6%'),
@@ -261,13 +333,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#064E3B',
     marginBottom: hp('2.5%'),
-    marginTop: hp('1.5%'),
+    marginTop: hp('1%'),
   },
   listContent: {
     paddingBottom: hp('4%'),
   },
   rowSeparator: {
-    height: hp('4%'),
+    height: hp('3%'),
   },
   pairRow: {
     flexDirection: 'row',
@@ -285,12 +357,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   featuredContainer: {
-    marginVertical: hp('1.5%'),
+    marginVertical: hp('1%'),
     marginHorizontal: wp('4%'),
     borderRadius: 16,
     overflow: 'hidden',
-    height: hp('22%'),
-    elevation: 4,
+    height: hp('20%'),
+    elevation: 3,
   },
   featuredImage: {
     width: '100%',
@@ -314,7 +386,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   featuredName: {
-    fontSize: wp('5.2%'),
+    fontSize: wp('5%'),
     fontWeight: '800',
     color: '#fff',
     marginTop: 4,
@@ -329,5 +401,17 @@ const styles = StyleSheet.create({
   },
   topServiceCard: {
     width: wp('28.5%'),
+  },
+  emptyResults: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: hp('10%'),
+  },
+  emptyResultsText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    paddingHorizontal: wp('10%'),
   },
 });

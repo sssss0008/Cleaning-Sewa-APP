@@ -34,6 +34,7 @@
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-updates": "~29.0.18",
+    "framer-motion": "^11.0.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -48,11 +49,11 @@
     "react-native-svg-transformer": "^1.5.3",
     "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "~0.21.0",
-    "react-redux": "^9.3.0",
-    "framer-motion": "^11.0.3"
+    "react-redux": "^9.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "^20.2.0",
     "typescript": "~5.9.2"
   },
   "private": true

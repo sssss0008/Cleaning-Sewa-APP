@@ -1,29 +1,14 @@
 import React, { useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  Image,
-  Pressable,
-  Alert,
-  Platform,
-} from 'react-native';
-import Dropdown from '../../components/bookings/Dropdown';
-import { businessType, city, howduhear, partnershipInterest, services } from '../../src/data/Data';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image, Pressable, Alert, Platform } from 'react-native';
+import { area, businessType, partnershipInterest } from '../../src/data/Data';
 import TextArea from '../../components/bookings/TextArea';
 import SubmitOverlay from '../../components/bookings/SubmitOverlay';
-import countryLogo from '../../assets/header/right.png';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import countryLogo from '../../assets/header/nepal-flag-icon-256.png';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import FileUploadBox from '../../components/bookings/FileUploadBox';
-import ClearFormIcon from '../../assets/icons/booking/clear.png'
+import ClearFormIcon from '../../assets/icons/booking/clear.png';
 import DropdownAdd from '../../components/bookings/DropdownAdd';
-import Header3 from '@/components/Header3drawer';
+import Header3 from '../../components/Header3drawer';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const { width, height } = Dimensions.get('window');
@@ -32,19 +17,13 @@ interface ButtonProps {
   children: React.ReactNode;
   style?: any;
   textStyle?: any;
-  onPress?: () => void;
+  onPress: () => void;
 }
 
 const Button = ({ children, style, textStyle, onPress }: ButtonProps) => {
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      style={style}
-      onPress={onPress}
-    >
-      <Text style={[styles.text, textStyle]}>
-        {children}
-      </Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={style}>
+      <Text style={[styles.text, textStyle]}> {children} </Text>
     </TouchableOpacity>
   );
 };
@@ -55,31 +34,31 @@ export type FileItem = {
 };
 
 export default function PartnershipScreen() {
-  const scrollRef = useRef<any>(null);
+  const scrollRef = useRef<KeyboardAwareScrollView>(null);
 
-  const [name, setName] = useState('');
+  // Form States
+  const [businessName, setBusinessName] = useState('');
+  const [contactPerson, setContactPerson] = useState('');
   const [number, setNumber] = useState('');
   const [email, setEmail] = useState('');
-  const [organizationName, setOrganizationName] = useState('');
-  const [message, setMessage] = useState('');
-  const [employees, setEmployees] = useState('');
+  const [yearsInOperation, setYearsInOperation] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
+  const [proposalMessage, setProposalMessage] = useState('');
 
-  // Photos state
-  const [selectCompanyPhotos, setSelectCompanyPhotos] = useState<FileItem[]>([]);
-  const [selectCRCphotos, setSelectCRCphotos] = useState<FileItem[]>([]);
+  // Files
+  const [businessDocuments, setBusinessDocuments] = useState<FileItem[]>([]);
+  const [companyProfile, setCompanyProfile] = useState<FileItem[]>([]);
 
   // Dropdown states
-  const [selectedArea, setSelectedArea] = useState('');
-  const [selectedBusinessType, setSelectedBusinessType] = useState('');
-  const [selectedPartnership, setSelectedPartnership] = useState('');
-  const [selectedHowHeard, setSelectedHowHeard] = useState('Facebook ');
-  const [selectedServicesOffered, setSelectedServicesOffered] = useState<string[]>([]);
+  const [selectedBusinessType, setSelectedBusinessType] = useState<string[]>([]);
+  const [selectedArea, setSelectedArea] = useState<string[]>([]);
+  const [selectedInterest, setSelectedInterest] = useState<string[]>([]);
 
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayStatus, setOverlayStatus] = useState<'loading' | 'success'>('loading');
   const [activeInput, setActiveInput] = useState<string | null>(null);
 
-  // Validate that all attached files are JPG or PNG
+  // Validate JPG/PNG files
   const isJpgOrPng = (file: FileItem) => {
     const fileName = file.fileName || file.uri;
     const ext = fileName.split('.').pop()?.toLowerCase();
@@ -87,19 +66,18 @@ export default function PartnershipScreen() {
   };
 
   const clearAllFields = () => {
-    setName('');
+    setBusinessName('');
+    setContactPerson('');
     setNumber('');
     setEmail('');
-    setOrganizationName('');
-    setMessage('');
-    setEmployees('');
-    setSelectCompanyPhotos([]);
-    setSelectCRCphotos([]);
-    setSelectedArea('');
-    setSelectedBusinessType('');
-    setSelectedPartnership('');
-    setSelectedHowHeard('Facebook ');
-    setSelectedServicesOffered([]);
+    setYearsInOperation('');
+    setRegistrationNumber('');
+    setProposalMessage('');
+    setBusinessDocuments([]);
+    setCompanyProfile([]);
+    setSelectedBusinessType([]);
+    setSelectedArea([]);
+    setSelectedInterest([]);
     setActiveInput(null);
   };
 
@@ -115,10 +93,36 @@ export default function PartnershipScreen() {
   };
 
   const handleSubmit = () => {
-    // Check files before submitting
-    const allFiles = [...selectCompanyPhotos, ...selectCRCphotos];
-    const invalidFiles = allFiles.filter(file => !isJpgOrPng(file));
+    // Validate required fields
+    const isMissingFields =
+      !businessName.trim() ||
+      !contactPerson.trim() ||
+      !number.trim() ||
+      !email.trim() ||
+      selectedBusinessType.length === 0 ||
+      !yearsInOperation.trim() ||
+      selectedArea.length === 0 ||
+      selectedInterest.length === 0 ||
+      !proposalMessage.trim();
 
+    if (isMissingFields) {
+      Alert.alert(
+        'Required Fields Missing',
+        'Please complete all required fields (*) before submitting.'
+      );
+      return;
+    }
+
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    // Check files before submitting
+    const allFiles = [...businessDocuments, ...companyProfile];
+    const invalidFiles = allFiles.filter(file => !isJpgOrPng(file));
     if (invalidFiles.length > 0) {
       Alert.alert('Invalid File Type', 'Please upload only .jpg or .png images.');
       return;
@@ -126,7 +130,11 @@ export default function PartnershipScreen() {
 
     setOverlayStatus('loading');
     setOverlayVisible(true);
-    // Proceed with form submission logic
+
+    // Simulate API call
+    setTimeout(() => {
+      setOverlayStatus('success');
+    }, 2000);
   };
 
   return (
@@ -135,7 +143,10 @@ export default function PartnershipScreen() {
       <SubmitOverlay
         visible={overlayVisible}
         status={overlayStatus}
-        onClear={() => { clearAllFields(); setOverlayVisible(false); }}
+        onClear={() => {
+          clearAllFields();
+          setOverlayVisible(false);
+        }}
         onClose={() => setOverlayVisible(false)}
       />
       <KeyboardAwareScrollView
@@ -144,39 +155,45 @@ export default function PartnershipScreen() {
         showsVerticalScrollIndicator={false}
         extraScrollHeight={80}
         keyboardShouldPersistTaps="handled"
+        enableResetScrollToCoords={false}
+        resetScrollToCoords={undefined}
         enableAutomaticScroll={Platform.OS === 'ios'}
         keyboardDismissMode="on-drag"
       >
         <View style={[styles.formContainer, { marginBottom: hp('5%') }]}>
           <Text style={styles.title}>Become a Partner</Text>
-          <Text style={styles.subTitle}>Partnership opportunity with CleaningSewa</Text>
-
           <View style={styles.spacerGap} />
 
-          {/* Full Name */}
-          <Text style={styles.label}>Full Name<Text style={{ color: 'red' }}>*</Text></Text>
+          {/* Business Name */}
+          <Text style={styles.label}>Business Name<Text style={{ color: 'red' }}>*</Text></Text>
           <TextInput
-            placeholder="Enter your Full Name"
-            value={name}
-            onChangeText={setName}
-            onFocus={() => setActiveInput('name')}
+            placeholder="Enter your registered business name"
+            value={businessName}
+            onChangeText={setBusinessName}
+            onFocus={() => setActiveInput('businessName')}
             onBlur={() => setActiveInput(null)}
-            style={[styles.input, activeInput === 'name' && styles.inputActive]}
+            style={[
+              styles.input,
+              activeInput === 'businessName' && styles.inputActive
+            ]}
             placeholderTextColor={'#4B4B4B'}
-            maxLength={30}
+            autoCapitalize="words"
           />
 
-          {/* Name of Organization */}
-          <Text style={styles.label}>Name of Organization<Text style={{ color: 'red' }}>*</Text></Text>
+          {/* Contact Person */}
+          <Text style={styles.label}>Contact Person Name<Text style={{ color: 'red' }}>*</Text></Text>
           <TextInput
-            placeholder="Enter the name of your Organization"
-            value={organizationName}
-            onChangeText={setOrganizationName}
-            onFocus={() => setActiveInput('organization')}
+            placeholder="Full name of contact person"
+            value={contactPerson}
+            onChangeText={setContactPerson}
+            onFocus={() => setActiveInput('contactPerson')}
             onBlur={() => setActiveInput(null)}
-            style={[styles.input, activeInput === 'organization' && styles.inputActive]}
+            style={[
+              styles.input,
+              activeInput === 'contactPerson' && styles.inputActive
+            ]}
             placeholderTextColor={'#4B4B4B'}
-            maxLength={100}
+            autoCapitalize="words"
           />
 
           {/* Phone Number */}
@@ -196,7 +213,6 @@ export default function PartnershipScreen() {
                 let cleaned = value.replace(/[^0-9]/g, '');
                 cleaned = cleaned.slice(0, 10);
                 let formatted = cleaned;
-
                 if (cleaned.length > 3 && cleaned.length <= 6) {
                   formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3);
                 } else if (cleaned.length > 6) {
@@ -205,143 +221,137 @@ export default function PartnershipScreen() {
                 setNumber(formatted);
               }}
               keyboardType="number-pad"
-              style={[styles.phoneInput, activeInput === 'phone' && styles.inputActive]}
+              style={[
+                styles.phoneInput,
+                activeInput === 'phone' && styles.inputActive
+              ]}
               placeholderTextColor={'#4B4B4B'}
               maxLength={12}
             />
           </View>
 
           {/* Email */}
-          <Text style={styles.label}>Email<Text style={{ color: 'red' }}>*</Text></Text>
+          <Text style={styles.label}>Business Email<Text style={{ color: 'red' }}>*</Text></Text>
           <TextInput
-            placeholder="Enter your Email Address"
+            placeholder="Enter your business email address"
             value={email}
             onChangeText={setEmail}
             onFocus={() => setActiveInput('email')}
             onBlur={() => setActiveInput(null)}
-            style={[styles.input, activeInput === 'email' && styles.inputActive]}
+            style={[
+              styles.input,
+              activeInput === 'email' && styles.inputActive
+            ]}
             placeholderTextColor={'#4B4B4B'}
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
 
-          {/* Company Photos (JPG/PNG only) */}
-          <Text style={styles.label}>Company Photos (JPG, PNG only)<Text style={{ color: 'red' }}>*</Text></Text>
-          <FileUploadBox
-            value={selectCompanyPhotos}
-            maxFiles={5}
-            onChange={setSelectCompanyPhotos}
-            allowedExtensions={['jpg', 'jpeg', 'png']}
-          />
-
-          {/* Area Dropdown */}
-          <Text style={styles.label}>City<Text style={{ color: 'red' }}>*</Text></Text>
-          <Dropdown
-            options={city}
-            placeholder="Select your City"
-            placeholderColor="#4B4B4B"
-            onSelectOption={setSelectedArea}
-            value={selectedArea}
-            onOpen={() => setActiveInput('area')}
-            onClose={() => setActiveInput(null)}
-          />
-
-          {/* Number of Employees */}
-          <Text style={styles.label}>Number of Employees<Text style={{ color: 'red' }}>*</Text></Text>
-          <TextInput
-            placeholder="Enter the number of Employees"
-            placeholderTextColor={'#4B4B4B'}
-            keyboardType="numeric"
-            value={employees}
-            onFocus={() => setActiveInput('employees')}
-            onBlur={() => setActiveInput(null)}
-            onChangeText={(text) => setEmployees(text.replace(/[^0-9]/g, ''))}
-            style={[styles.input, activeInput === 'employees' && styles.inputActive]}
-            maxLength={7}
-          />
-
-          {/* Business Type Dropdown */}
+          {/* Business Type */}
           <Text style={styles.label}>Business Type<Text style={{ color: 'red' }}>*</Text></Text>
-          <Dropdown
+          <DropdownAdd
             options={businessType}
-            placeholder="Select your Business Type"
+            placeholder="Select your business category"
             placeholderColor="#4B4B4B"
-            onSelectOption={setSelectedBusinessType}
             value={selectedBusinessType}
+            onSelectOption={setSelectedBusinessType}
             onOpen={() => setActiveInput('businessType')}
             onClose={() => setActiveInput(null)}
+            maxSelections={3}
           />
 
-          {/* Services Offered Dropdown Add */}
-          <Text style={styles.label}>Services Offered<Text style={{ color: 'red' }}>*</Text></Text>
-          <DropdownAdd
-            options={services}
-            placeholder="Select the Services you offer"
-            placeholderColor="#4B4B4B"
-            onSelectOption={setSelectedServicesOffered}
-            value={selectedServicesOffered}
-            onOpen={() => setActiveInput('servicesOffered')}
-            onClose={() => setActiveInput(null)}
+          {/* Years in Operation */}
+          <Text style={styles.label}>Years in Operation<Text style={{ color: 'red' }}>*</Text></Text>
+          <TextInput
+            placeholder="How many years has your business been operating?"
+            value={yearsInOperation}
+            onFocus={() => setActiveInput('years')}
+            onBlur={() => setActiveInput(null)}
+            onChangeText={(text) => {
+              const onlyNumbers = text.replace(/[^0-9]/g, '');
+              setYearsInOperation(onlyNumbers);
+            }}
+            style={[
+              styles.input,
+              activeInput === 'years' && styles.inputActive
+            ]}
+            placeholderTextColor={'#4B4B4B'}
+            keyboardType="numeric"
           />
 
-          {/* Partnership Interest Dropdown */}
-          <Text style={styles.label}>Partnership Interest<Text style={{ color: 'red' }}>*</Text></Text>
-          <Dropdown
-            options={partnershipInterest}
-            placeholder="Select Partnership Interest"
-            placeholderColor="#4B4B4B"
-            onSelectOption={setSelectedPartnership}
-            value={selectedPartnership}
-            onOpen={() => setActiveInput('partnership')}
-            onClose={() => setActiveInput(null)}
-          />
-
-          {/* Company Registration Certificates (JPG/PNG only) */}
-          <Text style={styles.label}>Company Registration Certificates (JPG, PNG only)<Text style={{ color: 'red' }}>*</Text></Text>
-          <FileUploadBox
-            value={selectCRCphotos}
-            maxFiles={10}
-            onChange={setSelectCRCphotos}
-            allowedExtensions={['jpg', 'jpeg', 'png']}
-          />
-
-          {/* How did you hear about us Dropdown */}
-          <Text style={styles.label}>How did you hear about us?<Text style={{ color: 'red' }}>*</Text></Text>
-          <Dropdown
-            options={howduhear}
-            placeholder="How did you hear about us?"
-            placeholderColor="#4B4B4B"
-            onSelectOption={setSelectedHowHeard}
-            value={selectedHowHeard}
-            onOpen={() => setActiveInput('howHeard')}
-            onClose={() => setActiveInput(null)}
-          />
-
-          {/* Message TextArea */}
-          <Text style={styles.label}>Message<Text style={{ color: 'red' }}>*</Text></Text>
-          <TextArea
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Enter your message here"
-            placeholderTextColor="#4B4B4B"
-            maxHeight={160}
-            onFocus={() => setActiveInput('message')}
+          {/* Registration Number */}
+          <Text style={styles.label}>Business Registration Number</Text>
+          <TextInput
+            placeholder="PAN / VAT Number"
+            value={registrationNumber}
+            onChangeText={setRegistrationNumber}
+            onFocus={() => setActiveInput('registration')}
             onBlur={() => setActiveInput(null)}
             style={[
-              styles.textAreaBase,
-              activeInput === 'message' ? styles.inputActive : styles.inputInactive
+              styles.input,
+              activeInput === 'registration' && styles.inputActive
             ]}
+            placeholderTextColor={'#4B4B4B'}
           />
 
-          {/* Form Actions */}
+          {/* Business Documents */}
+          <Text style={styles.label}>Business Registration Documents (JPG, PNG)</Text>
+          <FileUploadBox
+            value={businessDocuments}
+            onChange={setBusinessDocuments}
+            maxFiles={5}
+          />
+
+          {/* Coverage Area */}
+          <Text style={styles.label}>Preferred Working Area<Text style={{ color: 'red' }}>*</Text></Text>
+          <DropdownAdd
+            options={area}
+            placeholder="Select areas you can cover"
+            placeholderColor="#4B4B4B"
+            value={selectedArea}
+            onSelectOption={setSelectedArea}
+            onOpen={() => setActiveInput('area')}
+            onClose={() => setActiveInput(null)}
+            maxSelections={5}
+          />
+
+          {/* Partnership Interest */}
+          <Text style={styles.label}>Partnership Interest<Text style={{ color: 'red' }}>*</Text></Text>
+          <DropdownAdd
+            options={partnershipInterest}
+            placeholder="Select partnership duration"
+            placeholderColor="#4B4B4B"
+            value={selectedInterest}
+            onSelectOption={setSelectedInterest}
+            onOpen={() => setActiveInput('interest')}
+            onClose={() => setActiveInput(null)}
+            maxSelections={1}
+          />
+
+          {/* Proposal/Bio */}
+          <Text style={styles.label}>Business Proposal / Short Bio<Text style={{ color: 'red' }}>*</Text></Text>
+          <TextArea
+            value={proposalMessage}
+            onChangeText={setProposalMessage}
+            placeholder="Briefly describe your business and why you want to partner with us"
+            placeholderTextColor="#4B4B4B"
+            maxHeight={160}
+            onFocus={() => setActiveInput('proposal')}
+            onBlur={() => setActiveInput(null)}
+            style={activeInput === 'proposal' && styles.inputActive}
+          />
+
+          {/* Action Buttons */}
           <View style={styles.buttonContainer}>
             <Pressable style={styles.buttonClearFlex} onPress={handleClearForm}>
               <Image source={ClearFormIcon} style={styles.clearIcon} />
               <Text style={styles.buttonClear}>Clear form</Text>
             </Pressable>
-
             <Button
               style={styles.buttonSubmit}
               onPress={handleSubmit}
-              textStyle={{ color: 'white', textAlign: 'center' }}>
+              textStyle={{ color: 'white', textAlign: 'center' }}
+            >
               Submit
             </Button>
           </View>
@@ -367,13 +377,6 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     paddingLeft: 3,
   },
-  subTitle: {
-    fontSize: width * 0.034,
-    fontWeight: '400',
-    color: '#666',
-    paddingLeft: 3,
-    marginTop: 4,
-  },
   spacerGap: {
     marginVertical: 20
   },
@@ -389,19 +392,6 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     backgroundColor: '#fff',
   },
-  textAreaBase: {
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingHorizontal: width * 0.035,
-    paddingVertical: 10,
-    fontSize: width * 0.035,
-    fontWeight: '500',
-    color: '#1A1A1A',
-  },
-  inputInactive: {
-    borderColor: '#E2E8F0',
-    backgroundColor: '#fff',
-  },
   inputActive: {
     borderColor: 'hsl(142, 71%, 45%)',
     backgroundColor: '#F4F7FF',
@@ -410,10 +400,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center',
     marginBottom: height * 0.02,
+    width: '100%',
   },
   flagIcon: {
-    width: wp('7%'),
-    height: hp('3.8%'),
+    width: wp('4.5%'),
+    height: hp('2.5%'),
     position: 'absolute',
     left: wp('3%'),
     zIndex: 2,
@@ -431,8 +422,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderColor: '#E2E8F0',
     height: height * 0.055,
-    paddingLeft: wp('13.5%'),
-    paddingRight: 10,
+    width: '100%',
+    paddingLeft: wp('10%'),
+    paddingRight: wp('3.5%'),
     fontSize: width * 0.035,
     fontWeight: '500',
     color: '#1A1A1A',
