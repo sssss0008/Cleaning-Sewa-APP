@@ -2,7 +2,7 @@
   "expo": {
     "name": "CleaningSewa",
     "slug": "cleaningsewa",
-    "version": "3.0.0",
+    "version": "4.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cleaningsewa",
@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.pracas.cleaningsewa"
     },
     "android": {
-      "versionCode": 1,
+      "versionCode": 4,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#dcdcdc",
