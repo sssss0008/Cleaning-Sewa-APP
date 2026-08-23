@@ -740,4 +740,4 @@ const styles = StyleSheet.create({
   statusActionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: hp('0.5%') },
   actionBtn: { flex: 1, paddingVertical: hp('1.2%'), borderRadius: 8, alignItems: 'center', marginHorizontal: wp('1%') },
   actionBtnText: { fontWeight: '800', fontSize: wp('3.2%') },
-});
+}); 
