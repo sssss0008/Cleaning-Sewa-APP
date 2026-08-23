@@ -397,4 +397,16 @@ export const servicesData2 = [
       'We use premium, pH-balanced, hypoallergenic dog shampoos and conditioners that are highly gentle on your dog\'s skin and coat.',
     image: require('../../assets/CleaningSewa-Photos/dog-cleaning.jpg'),
   },
+  {
+    id: 34,
+    name: 'Bike Cleaning',
+    words: 'Detail washing and polishing.',
+    number: 12,
+    description:
+      'Professional bike cleaning and detailing service in Nepal. We provide thorough high-pressure washing, degreasing of chains and engines, and premium wax polishing to keep your motorbike or scooter looking brand new and protected from the elements.',
+    question: 'What is included in professional bike cleaning?',
+    answer:
+      'Bike cleaning includes a full pressure wash, chain degreasing, engine cleaning, and a high-gloss protective wax polish.',
+    image: require('../../assets/CleaningSewa-Photos/car-interior-cleaning.jpg'), // Using similar professional auto asset as placeholder
+  },
 ];

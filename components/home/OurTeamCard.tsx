@@ -1,69 +1,61 @@
-import { View, Text, Image, StyleSheet, ImageStyle, ViewStyle } from 'react-native';
 import React from 'react';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { useTheme } from '../../src/context/ThemeContext';
 
-type Props = {
+interface OurTeamCardProps {
   title: string;
   suBTitle: string;
   image: any;
-  style?: ImageStyle; // Specific type for image overrides
-};
+}
 
-const OurTeamCard = ({ title, suBTitle, image, style }: Props) => {
+export default function OurTeamCard({ title, suBTitle, image }: OurTeamCardProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
-      {/* Container wrapper for the image shadow to prevent overflow/clipping bugs */}
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.imageContainer}>
-        <Image source={image} style={[styles.image, style]} />
+        <Image source={image} style={styles.image} resizeMode="cover" />
       </View>
-      <Text style={styles.title} numberOfLines={1}>{title}</Text>
-      <Text style={styles.suBTitle} numberOfLines={2}>{suBTitle}</Text>
+      <Text style={[styles.name, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.role, { color: colors.subText }]}>{suBTitle}</Text>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
     alignItems: 'center',
-    marginVertical: hp('1%'),
-    // 3 cards at 28% width = 84%. Leaving 16% total room for gaps/margins.
-    width: wp('28%'), 
-  },
-  imageContainer: {
-    borderRadius: wp('9%'), // Match half of width/height for a perfect circle
-    backgroundColor: '#fff',
-    // Platform-safe native shadow properties
-    elevation: 3,
+    padding: 16,
+    marginVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    width: '100%',
+    maxWidth: 200,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  imageContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    overflow: 'hidden',
+    marginBottom: 12,
   },
   image: {
-    width: wp('18%'), 
-    height: wp('18%'), 
-    resizeMode: 'cover', // 'cover' looks much better for real portrait/avatar photos than 'contain'
-    borderRadius: wp('9%'),
-  },
-  title: {
-    marginTop: hp('1%'),
-    fontWeight: '600',
-    fontSize: wp('3.5%'), 
-    color: '#111827', // Clean off-black
-    textAlign: 'center',
     width: '100%',
+    height: '100%',
   },
-  suBTitle: {
-    marginTop: hp('0.3%'),
-    fontWeight: '400',
-    fontSize: wp('2.8%'), 
-    color: '#6B7280', // Soft gray for subtext
+  name: {
+    fontSize: 16,
+    fontWeight: '700',
     textAlign: 'center',
-    width: '100%',
+  },
+  role: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 4,
   },
 });
-
-export default OurTeamCard;

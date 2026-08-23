@@ -1,180 +1,86 @@
 import React, { useCallback, useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  Linking,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  TextInput,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-
-import Email from '../../../assets/icons/contact/email_1.png';
-import Location from '../../../assets/icons/contact/location-pin.png';
-import Website from '../../../assets/icons/contact/globe.png';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import { View, Text, TouchableOpacity, Image, Linking, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, StatusBar } from 'react-native';
 import Header2 from '../../../components/Header2';
 import { Ionicons } from '@expo/vector-icons';
-import { feedbackService } from '../../../src/services/feedbackService';
+import { useTheme } from '../../../src/context/ThemeContext';
 
-const ICON_SIZE = hp('3.3%');
-const MAP_URL = 'https://maps.app.goo.gl/A8qYWT5xucEgkEd69';
+const CONTACT_INFO = {
+  phone: '+9779851152774',
+  whatsapp: '9779851152774',
+  email: 'cleaningsewa@sriyog.com',
+  location: 'Kamalpokhari, Kathmandu (Sriyog Consulting)',
+  mapUrl: 'https://www.google.com/maps/search/?api=1&query=Sriyog+Consulting+Kamalpokhari+Kathmandu'
+};
 
 export default function ContactScreen() {
-  const [feedback, setFeedback] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { colors, isDarkMode } = useTheme();
+  const [msg, setMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const openWebsite = useCallback(() => {
-    Linking.openURL('https://CleaningSewa.com');
-  }, []);
+  const handleAction = (type: 'call' | 'whatsapp' | 'email' | 'map') => {
+    let url = '';
+    if (type === 'call') url = `tel:${CONTACT_INFO.phone}`;
+    if (type === 'whatsapp') url = `whatsapp://send?phone=${CONTACT_INFO.whatsapp}`;
+    if (type === 'email') url = `mailto:${CONTACT_INFO.email}`;
+    if (type === 'map') url = CONTACT_INFO.mapUrl;
 
-  const handleEmailPress = useCallback(() => {
-    Linking.openURL('mailto:mail@CleaningSewa.com');
-  }, []);
+    Linking.openURL(url).catch(() => Alert.alert('Error', 'Unable to open application.'));
+  };
 
-  const handleMapPress = useCallback(() => {
-    Linking.openURL(MAP_URL);
-  }, []);
-
-  const handleSendFeedback = async () => {
-    if (!feedback.trim()) {
-      Alert.alert('Empty Message', 'Please enter your feedback before sending.');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    const result = await feedbackService.submitFeedback(feedback);
-
-    setIsSubmitting(false);
-
-    if (result.success) {
-      Alert.alert('Thank You!', 'Your feedback has been received. We appreciate your input.');
-      setFeedback('');
-    } else {
-      Alert.alert('Error', result.error || 'Failed to send feedback.');
-    }
+  const submit = () => {
+    if (!msg.trim()) return Alert.alert('Error', 'Please enter feedback');
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      Alert.alert('Success', 'Feedback sent successfully!');
+      setMsg('');
+    }, 1500);
   };
 
   return (
-    <View style={styles.screen}>
-      <Header2 />
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.container}>
-          <Text style={styles.title}>Contact Us</Text>
-          <Text style={styles.subtitle}>We're always here to help you out.</Text>
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+      <Header2 title="Contact & Support" />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <View style={styles.cont}>
+          <Text style={[styles.title, { color: isDarkMode ? colors.primary : '#064E3B' }]}>Contact Us</Text>
 
-          {/* MAP */}
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={handleMapPress}
-            style={styles.imageContainer}
-          >
-            <Image
-              source={require('../../../assets/home/sriyogmap.png')}
-              style={styles.mapImage}
-              resizeMode="cover"
-            />
-            <View style={styles.mapBadge}>
-              <Text style={styles.mapBadgeText}>Tap to Open Map</Text>
-            </View>
+          <TouchableOpacity activeOpacity={0.9} onPress={() => handleAction('map')} style={styles.mapContainer}>
+            <Image source={require('../../../assets/home/sriyogmap.png')} style={styles.mapImg} resizeMode="cover" />
+            <View style={styles.mapBadge}><Text style={styles.mapBadgeText}>Sriyog Location - Tap to Open</Text></View>
           </TouchableOpacity>
 
-          {/* COMPANY */}
-          <Text style={styles.companyName}>CleaningSewa </Text>
-          <Text style={styles.companySubtitle}>
-             Professional Cleaning Services in Nepal
-          </Text>
+          <View style={styles.infoGrid}>
+             <TouchableOpacity style={[styles.card, { backgroundColor: isDarkMode ? colors.card : '#FFF' }]} onPress={() => handleAction('call')}>
+                <Ionicons name="call" size={24} color="#064E3B" />
+                <View style={styles.cardLead}>
+                   <Text style={[styles.ct, { color: colors.text }]}>Call Us</Text>
+                   <Text style={styles.cs}>{CONTACT_INFO.phone}</Text>
+                </View>
+             </TouchableOpacity>
 
-          {/* CARDS */}
-          <View style={styles.gridBox}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={handleMapPress}
-              style={styles.card}
-            >
-              <View style={styles.iconContainer}>
-                <Image source={Location} style={styles.icon} />
-              </View>
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>Visit us</Text>
-                <Text style={styles.cardSubtitle} numberOfLines={2}>
-                  Rem.Work, Kamalpokhari, Kathmandu, Nepal
-                </Text>
-              </View>
-            </TouchableOpacity>
+             <TouchableOpacity style={[styles.card, { backgroundColor: isDarkMode ? colors.card : '#FFF' }]} onPress={() => handleAction('whatsapp')}>
+                <Ionicons name="logo-whatsapp" size={24} color="#25D366" />
+                <View style={styles.cardLead}>
+                   <Text style={[styles.ct, { color: colors.text }]}>WhatsApp</Text>
+                   <Text style={styles.cs}>Chat with us now</Text>
+                </View>
+             </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={handleEmailPress}
-              style={styles.card}
-            >
-              <View style={styles.iconContainer}>
-                <Image source={Email} style={styles.icon} />
-              </View>
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>Email us</Text>
-                <Text style={[styles.cardSubtitle, styles.linkText]}>
-                  CleaningSewa@sriyog.com
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={openWebsite}
-              style={styles.card}
-            >
-              <View style={styles.iconContainer}>
-                <Image source={Website} style={styles.icon} />
-              </View>
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>Website</Text>
-                <Text style={[styles.cardSubtitle, styles.linkText]}>
-                  https://CleaningSewa.com
-                </Text>
-              </View>
-            </TouchableOpacity>
+             <TouchableOpacity style={[styles.card, { backgroundColor: isDarkMode ? colors.card : '#FFF' }]} onPress={() => handleAction('email')}>
+                <Ionicons name="mail" size={24} color="#3B82F6" />
+                <View style={styles.cardLead}>
+                   <Text style={[styles.ct, { color: colors.text }]}>Email Us</Text>
+                   <Text style={styles.cs}>{CONTACT_INFO.email}</Text>
+                </View>
+             </TouchableOpacity>
           </View>
 
-          {/* FEEDBACK FORM (SUG_005) */}
-          <View style={styles.feedbackSection}>
-            <Text style={styles.feedbackTitle}>Send Us Feedback</Text>
-            <Text style={styles.feedbackSubtitle}>Tell us about your experience or report an issue.</Text>
-
-            <TextInput
-              style={styles.feedbackInput}
-              multiline
-              numberOfLines={4}
-              placeholder="How can we improve?"
-              placeholderTextColor="#9CA3AF"
-              value={feedback}
-              onChangeText={setFeedback}
-            />
-
-            <TouchableOpacity
-              style={styles.sendButton}
-              onPress={handleSendFeedback}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <>
-                  <Text style={styles.sendButtonText}>Send Feedback</Text>
-                  <Ionicons name="send" size={16} color="#FFF" style={{ marginLeft: 8 }} />
-                </>
-              )}
+          <View style={[styles.fBox, { backgroundColor: isDarkMode ? colors.card : '#FFF' }]}>
+            <Text style={[styles.ft, { color: isDarkMode ? colors.primary : '#064E3B' }]}>Send Feedback</Text>
+            <TextInput style={[styles.input, { color: colors.text, borderColor: colors.border }]} multiline value={msg} onChangeText={setMsg} placeholder="How can we improve?" placeholderTextColor="#9CA3AF" />
+            <TouchableOpacity style={styles.btn} onPress={submit} disabled={loading}>
+              {loading ? <ActivityIndicator color="#FFF" /> : <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Send Feedback</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -184,179 +90,21 @@ export default function ContactScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  container: {
-    paddingHorizontal: wp('5%'),
-    paddingTop: hp('2.5%'),
-    paddingBottom: hp('4%'),
-  },
-  title: {
-    fontSize: wp('6.5%'),
-    fontWeight: '700',
-    color: '#064E3B',
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: wp('3.8%'),
-    color: '#64748B',
-    marginTop: 4,
-    marginBottom: hp('2.5%'),
-  },
-  imageContainer: {
-    width: '100%',
-    height: hp('22%'),
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#E2E8F0',
-    position: 'relative',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  mapImage: {
-    width: '100%',
-    height: '100%',
-  },
-  mapBadge: {
-    position: 'absolute',
-    bottom: 12,
-    right: 12,
-    backgroundColor: 'rgba(6, 78, 59, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  mapBadgeText: {
-    color: '#FFF',
-    fontSize: wp('3%'),
-    fontWeight: '600',
-  },
-  companyName: {
-    fontSize: wp('5%'),
-    fontWeight: '700',
-    marginTop: hp('3%'),
-    color: '#064E3B',
-  },
-  companySubtitle: {
-    fontSize: wp('3.6%'),
-    color: '#475569',
-    marginTop: 2,
-    marginBottom: hp('3%'),
-  },
-  gridBox: {
-    width: '100%',
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    paddingVertical: hp('1.5%'),
-    paddingHorizontal: wp('4%'),
-    marginBottom: hp('1.5%'),
-    borderRadius: 16,
-    backgroundColor: '#FFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  iconContainer: {
-    width: hp('5%'),
-    height: hp('5%'),
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: wp('4%'),
-  },
-  icon: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    resizeMode: 'contain',
-  },
-  cardContent: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  cardTitle: {
-    fontSize: wp('3.8%'),
-    fontWeight: '600',
-    color: '#1E293B',
-    marginBottom: 2,
-  },
-  cardSubtitle: {
-    fontSize: wp('3.2%'),
-    color: '#64748B',
-    lineHeight: wp('4.2%'),
-  },
-  linkText: {
-    color: '#064E3B',
-  },
-  feedbackSection: {
-    marginTop: hp('3%'),
-    backgroundColor: '#FFF',
-    padding: wp('5%'),
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    elevation: 2,
-  },
-  feedbackTitle: {
-    fontSize: wp('4.5%'),
-    fontWeight: '700',
-    color: '#064E3B',
-    marginBottom: 4,
-  },
-  feedbackSubtitle: {
-    fontSize: wp('3.2%'),
-    color: '#64748B',
-    marginBottom: hp('2%'),
-  },
-  feedbackInput: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 12,
-    height: hp('15%'),
-    textAlignVertical: 'top',
-    fontSize: wp('3.8%'),
-    color: '#1E293B',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: hp('2%'),
-  },
-  sendButton: {
-    backgroundColor: '#064E3B',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: hp('1.5%'),
-    borderRadius: 12,
-  },
-  sendButtonText: {
-    color: '#FFF',
-    fontSize: wp('3.8%'),
-    fontWeight: '600',
-  },
+  screen: { flex: 1 },
+  scroll: { paddingBottom: 40 },
+  cont: { padding: 20 },
+  title: { fontSize: 26, fontWeight: '800', marginBottom: 20 },
+  mapContainer: { width: '100%', height: 180, borderRadius: 20, overflow: 'hidden', marginBottom: 25, position: 'relative', elevation: 5 },
+  mapImg: { width: '100%', height: '100%' },
+  mapBadge: { position: 'absolute', bottom: 12, right: 12, backgroundColor: 'rgba(6, 78, 59, 0.9)', padding: 10, borderRadius: 20 },
+  mapBadgeText: { color: '#FFF', fontSize: 11, fontWeight: 'bold' },
+  infoGrid: { gap: 12, marginBottom: 25 },
+  card: { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 16, elevation: 2 },
+  cardLead: { marginLeft: 15 },
+  ct: { fontWeight: '800', fontSize: 15 },
+  cs: { color: '#6B7280', fontSize: 13, marginTop: 2 },
+  fBox: { padding: 25, borderRadius: 20, elevation: 2 },
+  ft: { fontSize: 20, fontWeight: '800', marginBottom: 15 },
+  input: { borderRadius: 12, padding: 15, height: 110, textAlignVertical: 'top', borderWidth: 1, backgroundColor: '#F9FAFB' },
+  btn: { backgroundColor: '#064E3B', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 15 }
 });

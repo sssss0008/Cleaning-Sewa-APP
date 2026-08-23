@@ -1,743 +1,366 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TextInput,
   TouchableOpacity,
-  Modal,
   Alert,
-  StatusBar,
   ScrollView,
   Image,
-  KeyboardAvoidingView,
+  Dimensions,
+  Modal,
   Platform,
+  KeyboardAvoidingView,
+  FlatList,
+  StatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import { router, useNavigation } from 'expo-router';
+import { DrawerActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../../src/context/ThemeContext';
+import Header2 from '../../components/Header2';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// ── SHARED GLOBAL HEADER IMPORT ────────────────────────────────────
-import Header2 from '@/components/Header2';
-
-export interface BookingItem {
-  id: number;
-  name: string;
-  service: string;
-  date: string;
-  status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
-  phone: string; // Strictly 10 digits
-  shift: string;
-  location: string;
-  message: string;
-  budget: string;
-}
-
-// Helper: Restricts phone numbers strictly to 10 numeric digits
-const sanitizePhone10Digit = (phoneStr: string) => {
-  return phoneStr.replace(/[^0-9]/g, '').slice(0, 10);
-};
-
-const INITIAL_BOOKINGS: BookingItem[] = [
-  {
-    id: 1,
-    name: 'Suman Shrestha',
-    service: 'Deep Home Cleaning',
-    date: '2026-03-25',
-    status: 'Pending',
-    phone: sanitizePhone10Digit('9841234567'),
-    shift: 'Morning (9:00 AM)',
-    location: 'Baneshwor, Kathmandu',
-    message: 'Need full deep cleaning including kitchen degreasing.',
-    budget: 'Rs. 5,000',
-  },
-  {
-    id: 2,
-    name: 'Aarati Sharma',
-    service: 'Sofa & Carpet Cleaning',
-    date: '2026-03-26',
-    status: 'Confirmed',
-    phone: sanitizePhone10Digit('9801987654'),
-    shift: 'Afternoon (2:00 PM)',
-    location: 'Lalitpur, Patan',
-    message: '3-seater sofa and 1 large living room carpet.',
-    budget: 'Rs. 2,500',
-  },
-  {
-    id: 3,
-    name: 'Rohan Thapa',
-    service: 'Water Tank Cleaning',
-    date: '2026-03-24',
-    status: 'Completed',
-    phone: sanitizePhone10Digit('9812345678'),
-    shift: 'Morning (8:00 AM)',
-    location: 'Bhaktapur, Suryabinayak',
-    message: '5000L underground water tank cleaning.',
-    budget: 'Rs. 3,500',
-  },
-];
+const { width, height } = Dimensions.get('window');
 
 export default function AdminScreen() {
-  // Auth & 2-Step Login States
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPinStep, setShowPinStep] = useState(false);
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
+  const [auth, setAuth] = useState({ logged: false, phone: '98520 243 65', pin: ['', '', '', ''] });
+  const [showPin, setShowPin] = useState(false);
 
-  // 4-Digit Security PIN States & Focus Refs
-  const [pin, setPin] = useState(['', '', '', '']);
-  const pinInputRefs = [
-    useRef<TextInput | null>(null),
-    useRef<TextInput | null>(null),
-    useRef<TextInput | null>(null),
-    useRef<TextInput | null>(null),
-  ];
+  const formatPhone = (text: string) => {
+    const cleaned = text.replace(/\D/g, '').slice(0, 10);
+    if (cleaned.length <= 5) return cleaned;
+    if (cleaned.length <= 8) return `${cleaned.slice(0, 5)} ${cleaned.slice(5)}`;
+    return `${cleaned.slice(0, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8)}`;
+  };
 
-  // Dashboard Management States
-  const [bookings, setBookings] = useState<BookingItem[]>(INITIAL_BOOKINGS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<string>('All');
-  const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(null);
+  // Dashboard Data
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [professionals, setProfessionals] = useState<any[]>([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [activeTab, setActiveTab] = useState<'bookings' | 'pros'>('bookings');
 
-  // Step 1: Check Username & Password
-  const handleVerifyCredentials = () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Required Fields', 'Please enter Admin Username/Email and Password.');
-      return;
+  const [editModal, setEditModal] = useState({ visible: false, data: null as any, type: '' as 'booking' | 'pro' });
+
+  const pinRefs = [useRef<TextInput>(null), useRef<TextInput>(null), useRef<TextInput>(null), useRef<TextInput>(null)];
+
+  useEffect(() => {
+    if (auth.logged) loadAllData();
+  }, [auth.logged]);
+
+  const loadAllData = async () => {
+    try {
+      const bData = await AsyncStorage.getItem('user_bookings');
+      const pData = await AsyncStorage.getItem('pro_applications');
+
+      if (bData) {
+        const parsed = JSON.parse(bData);
+        setBookings(parsed);
+        const revenue = parsed.reduce((acc: number, curr: any) => acc + parseInt(curr.price || 0), 0);
+        setTotalRevenue(revenue);
+      }
+      if (pData) setProfessionals(JSON.parse(pData));
+    } catch (e) { console.error(e); }
+  };
+
+  const handleLogin = () => {
+    const enteredPin = auth.pin.join('');
+    const rawPhone = auth.phone.replace(/\s/g, '');
+    if (rawPhone === '9852024365' && enteredPin === '1234') {
+      setAuth({ ...auth, logged: true });
+    } else {
+      Alert.alert('Access Denied', 'Invalid Phone or PIN');
     }
-    setShowPinStep(true);
-    setTimeout(() => {
-      pinInputRefs[0].current?.focus();
-    }, 150);
   };
 
-  // Step 2: Auto-focus movement between PIN boxes
-  const handlePinChange = (text: string, index: number) => {
-    const cleanDigit = text.replace(/[^0-9]/g, '');
-    const newPin = [...pin];
-    newPin[index] = cleanDigit;
-    setPin(newPin);
-
-    if (cleanDigit && index < 3) {
-      pinInputRefs[index + 1].current?.focus();
-    }
+  const updateStatus = async (id: string, newStatus: string, type: 'booking' | 'pro') => {
+    try {
+      if (type === 'booking') {
+        const updated = bookings.map(b => b.id === id ? { ...b, status: newStatus } : b);
+        setBookings(updated);
+        await AsyncStorage.setItem('user_bookings', JSON.stringify(updated));
+      } else {
+        const updated = professionals.map(p => p.id === id ? { ...p, verification: newStatus } : p);
+        setProfessionals(updated);
+        await AsyncStorage.setItem('pro_applications', JSON.stringify(updated));
+      }
+      setEditModal({ visible: false, data: null, type: '' });
+      Alert.alert('System Updated', `${type === 'booking' ? 'Booking' : 'Professional'} status changed to ${newStatus}`);
+    } catch (e) { console.error(e); }
   };
 
-  const handlePinKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === 'Backspace' && !pin[index] && index > 0) {
-      pinInputRefs[index - 1].current?.focus();
-    }
+  const resetAppForTesting = async () => {
+     await AsyncStorage.clear();
+     Alert.alert('System Reset', 'All user and pro data wiped. App will restart.');
+     router.replace('/onboarding1');
   };
 
-  // Step 3: Complete Sign-In
-  const handleFinalSignIn = () => {
-    const fullPin = pin.join('');
-    if (fullPin.length < 4) {
-      Alert.alert('Incomplete PIN', 'Please enter the complete 4-digit security passcode.');
-      return;
-    }
-    setIsLoggedIn(true);
-  };
-
-  // Logout Handler
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setShowPinStep(false);
-    setEmail('');
-    setPassword('');
-    setPin(['', '', '', '']);
-  };
-
-  // Search & Filter Logic
-  const filteredBookings = bookings.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.phone.includes(searchQuery);
-
-    const matchesStatus =
-      selectedFilter === 'All' ? true : item.status === selectedFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const updateBookingStatus = (id: number, newStatus: BookingItem['status']) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b))
-    );
-    if (selectedBooking && selectedBooking.id === id) {
-      setSelectedBooking({ ...selectedBooking, status: newStatus });
-    }
-    Alert.alert('Status Updated', `Booking #${id} status changed to ${newStatus}.`);
-  };
-
-  // Helper function to count bookings for each tab
-  const getTabCount = (tabName: string) => {
-    if (tabName === 'All') return bookings.length;
-    return bookings.filter((b) => b.status === tabName).length;
-  };
-
-  // ---------------------------------------------------------------------------
-  // 1. ADMIN LOGIN VIEW
-  // ---------------------------------------------------------------------------
-  if (!isLoggedIn) {
+  // --- LOGIN UI ---
+  if (!auth.logged) {
     return (
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false} />
-
-        {/* ── GLOBAL APP HEADER ─────────────────────────────── */}
-        <Header2 />
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.loginScrollContent}
-        >
-          {/* BRAND HEADER */}
-          <View style={styles.headerBox}>
-            <Image
-              source={require('../../assets/images/icon.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.brandTitle}>Cleaning Sewa</Text>
-            <Text style={styles.loginTitle}>Admin</Text>
-            <Text style={styles.loginSub}>
-              Enter admin credentials and 4-digit security PIN to access management controls.
-            </Text>
-          </View>
-
-          {/* STEP 1: CREDENTIALS FORM */}
-          <View style={styles.formCard}>
-            <Text style={styles.label}>Admin Username / Email</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="person-outline" size={18} color="#064E3B" style={styles.fieldIcon} />
-              <TextInput
-                style={styles.inputField}
-                placeholder="admin@cleaningsewa.com"
-                placeholderTextColor="#9CA3AF"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-              />
-            </View>
-
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="key-outline" size={18} color="#064E3B" style={styles.fieldIcon} />
-              <TextInput
-                style={styles.inputField}
-                placeholder="••••••••"
-                placeholderTextColor="#9CA3AF"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-            </View>
-
-            {!showPinStep && (
-              <TouchableOpacity
-                style={styles.loginBtn}
-                onPress={handleVerifyCredentials}
-                activeOpacity={0.88}
-              >
-                <LinearGradient
-                  colors={['#064E3B', '#047857']}
-                  style={styles.gradientBtn}
+      <View style={styles.loginContainer}>
+        <StatusBar barStyle="light-content" />
+        <View style={[styles.topSection, { paddingTop: insets.top }]}>
+          <View style={styles.fakeHeader}>
+             <Image source={require('../../assets/images/icon.png')} style={styles.headerLogo} />
+             <Text style={styles.headerTitle}>Cleaning Sewa</Text>
+             <View style={styles.headerIcons}>
+                <Ionicons name="logo-whatsapp" size={24} color="#FFF" />
+                <TouchableOpacity
+                  onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                  hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                 >
-                  <Text style={styles.loginBtnText}>Verify Credentials →</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            )}
+                  <Ionicons name="menu" size={28} color="#FFF" style={{ marginLeft: 15 }} />
+                </TouchableOpacity>
+             </View>
           </View>
-
-          {/* STEP 2: 4-DIGIT SECURITY PIN BOX */}
-          {showPinStep && (
-            <View style={styles.pinCard}>
-              <Text style={styles.pinTitle}>Security Passcode</Text>
-              <Text style={styles.pinSub}>Enter your 4-digit admin PIN below:</Text>
-
-              <View style={styles.pinRow}>
-                {pin.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    ref={pinInputRefs[index]}
-                    style={[
-                      styles.pinInputBox,
-                      digit !== '' && styles.pinInputBoxActive,
-                    ]}
-                    keyboardType="number-pad"
-                    maxLength={1}
-                    value={digit}
-                    onChangeText={(text) => handlePinChange(text, index)}
-                    onKeyPress={(e) => handlePinKeyPress(e, index)}
-                    selectTextOnFocus
+          <View style={styles.heroCenter}>
+             <View style={styles.lockCircle}><Ionicons name="lock-closed" size={40} color="#FBBF24" /></View>
+             <Text style={styles.heroBrand}>Cleaning Sewa</Text>
+             <Text style={styles.heroTag}>ADMIN LOGIN</Text>
+          </View>
+        </View>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.formContainer}>
+          <ScrollView contentContainerStyle={styles.formScroll} bounces={false}>
+            <View style={styles.whiteCard}>
+              <Text style={styles.signInTitle}>Sign In</Text>
+              <View style={styles.phoneInputBox}>
+                <Text style={styles.flag}>🇳🇵</Text>
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="98414 281 33"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="phone-pad"
+                  value={auth.phone}
+                  maxLength={12}
+                  onChangeText={v => {
+                    const formatted = formatPhone(v);
+                    setAuth({...auth, phone: formatted});
+                    if (formatted.replace(/\s/g, '').length === 10) {
+                      pinRefs[0].current?.focus();
+                    }
+                  }}
+                />
+              </View>
+              <View style={styles.pinLabelRow}>
+                 <Text style={styles.pinLabel}>PIN</Text>
+                 <TouchableOpacity onPress={() => setShowPin(!showPin)}><Ionicons name={showPin ? "eye-outline" : "eye-off-outline"} size={20} color="#9CA3AF" /></TouchableOpacity>
+              </View>
+              <View style={styles.pinGrid}>
+                {auth.pin.map((d, i) => (
+                  <TextInput key={i} ref={pinRefs[i]} style={styles.pinInput} maxLength={1} keyboardType="number-pad" secureTextEntry={!showPin} value={d}
+                    onChangeText={v => {
+                      const newP = [...auth.pin]; newP[i] = v; setAuth({...auth, pin: newP});
+                      if (v && i < 3) pinRefs[i+1].current?.focus();
+                    }}
                   />
                 ))}
               </View>
-
-              <TouchableOpacity
-                style={styles.loginBtn}
-                onPress={handleFinalSignIn}
-                activeOpacity={0.88}
-              >
-                <LinearGradient
-                  colors={['#064E3B', '#047857']}
-                  style={styles.gradientBtn}
-                >
-                  <Text style={styles.loginBtnText}>Sign In to Dashboard</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+              <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}><Text style={styles.loginBtnText}>Login</Text></TouchableOpacity>
+              <View style={styles.divider} />
+              <View style={styles.footerLinks}>
+                 <Text style={styles.joinText}>Manage as Master Admin</Text>
+                 <TouchableOpacity onPress={() => Alert.alert('Reset PIN', 'System reset required.')}><Text style={[styles.link, { marginTop: 15 }]}>Forgot Access Code?</Text></TouchableOpacity>
+              </View>
             </View>
-          )}
-
-          <TouchableOpacity
-            style={styles.joinNowLink}
-            onPress={() => router.push('/(drawer)/Career')}
-          >
-            <Text style={styles.joinNowText}>
-              Don't have an account? <Text style={styles.joinNowBold}>Join Now</Text>
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.backHomeBtn}
-            onPress={() => router.replace('/(drawer)/(tabs)/Home')}
-          >
-            <Text style={styles.backHomeText}>← Return to CleaningSewa Main App</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 2. LOGGED IN ADMIN DASHBOARD VIEW
-  // ---------------------------------------------------------------------------
+  // --- ENHANCED ADMIN PORTAL ---
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false} />
-
-      {/* ── GLOBAL APP HEADER ─────────────────────────────── */}
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Header2 />
-
-      {/* ── ADMIN DASHBOARD SUB-HEADER ───────────────────── */}
-      <View style={styles.adminDashboardHeader}>
-        <View style={styles.adminTitleRow}>
-          <View style={styles.adminTitleLeft}>
-            <Ionicons name="shield-checkmark" size={20} color="#064E3B" />
-            <Text style={styles.adminControlTitle}>Admin Dashboard</Text>
-          </View>
-          <TouchableOpacity style={styles.logoutPill} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={15} color="#DC2626" />
-            <Text style={styles.logoutPillText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={18} color="#9CA3AF" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search name, service, or 10-digit phone..."
-            placeholderTextColor="#9CA3AF"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery ? (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={18} color="#9CA3AF" />
-            </TouchableOpacity>
-          ) : null}
-        </View>
+      <View style={styles.adminHeader}>
+         <View>
+            <Text style={[styles.greeting, { color: colors.text }]}>Management Hub</Text>
+            <Text style={styles.subGreeting}>Platform Overview & Controls</Text>
+         </View>
+         <TouchableOpacity onPress={() => setAuth({ ...auth, logged: false })} style={styles.logoutBtn}>
+            <Ionicons name="log-out-outline" size={24} color="#FFF" />
+         </TouchableOpacity>
       </View>
 
-      {/* ── NAVIGATION FILTER TABS BELOW HEADER ──────────── */}
-      <View style={styles.tabsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map((tab) => {
-            const isActive = selectedFilter === tab;
-            const count = getTabCount(tab);
-            return (
-              <TouchableOpacity
-                key={tab}
-                style={[styles.tabChip, isActive && styles.tabChipActive]}
-                onPress={() => setSelectedFilter(tab)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.tabChipText, isActive && styles.tabChipTextActive]}>
-                  {tab}
-                </Text>
-                <View style={[styles.tabBadge, isActive && styles.tabBadgeActive]}>
-                  <Text style={[styles.tabBadgeText, isActive && styles.tabBadgeTextActive]}>
-                    {count}
-                  </Text>
-                </View>
+      <ScrollView contentContainerStyle={styles.dashContent} showsVerticalScrollIndicator={false}>
+        <View style={[styles.revenueCard, { backgroundColor: '#064E3B' }]}>
+           <View style={styles.revRow}>
+              <View>
+                <Text style={styles.revLabel}>TOTAL GROSS REVENUE</Text>
+                <Text style={styles.revVal}>NPR {totalRevenue.toLocaleString()}</Text>
+              </View>
+              <Ionicons name="stats-chart" size={40} color="rgba(255,255,255,0.2)" />
+           </View>
+        </View>
+
+        {/* Master Control Panel */}
+        <View style={styles.masterBox}>
+           <Text style={styles.secTitle}>Master Control Panel</Text>
+           <View style={styles.controlGrid}>
+              <TouchableOpacity style={styles.cMiniBtn} onPress={resetAppForTesting}>
+                 <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                 <Text style={[styles.cMiniTxt, { color: '#EF4444' }]}>Wipe Data</Text>
               </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+              <TouchableOpacity style={styles.cMiniBtn} onPress={() => Alert.alert('System', 'Global PINs forced to 1234')}>
+                 <Ionicons name="key-outline" size={20} color="#3B82F6" />
+                 <Text style={[styles.cMiniTxt, { color: '#3B82F6' }]}>Reset Access</Text>
+              </TouchableOpacity>
+           </View>
+        </View>
 
-      {/* Bookings List */}
-      <FlatList
-        data={filteredBookings}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyBox}>
-            <Ionicons name="document-text-outline" size={48} color="#9CA3AF" />
-            <Text style={styles.emptyText}>No bookings found under "{selectedFilter}"</Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.bookingCard}
-            activeOpacity={0.85}
-            onPress={() => setSelectedBooking(item)}
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.customerName}>{item.name}</Text>
-              <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
-                <Text style={styles.statusText}>{item.status}</Text>
-              </View>
-            </View>
+        {/* Dynamic List Management */}
+        <View style={styles.tabRow}>
+           <TouchableOpacity style={[styles.tab, activeTab === 'bookings' && styles.activeTab]} onPress={() => setActiveTab('bookings')}>
+              <Text style={[styles.tabTxt, activeTab === 'bookings' && styles.activeTabTxt]}>All Bookings ({bookings.length})</Text>
+           </TouchableOpacity>
+           <TouchableOpacity style={[styles.tab, activeTab === 'pros' && styles.activeTab]} onPress={() => setActiveTab('pros')}>
+              <Text style={[styles.tabTxt, activeTab === 'pros' && styles.activeTabTxt]}>Professionals ({professionals.length})</Text>
+           </TouchableOpacity>
+        </View>
 
-            <Text style={styles.serviceTitle}>{item.service}</Text>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.infoText}>📅 {item.date}</Text>
-              <Text style={styles.infoText}>🕒 {item.shift}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.infoText}>📍 {item.location}</Text>
-              <Text style={styles.infoText}>📞 {sanitizePhone10Digit(item.phone)}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
-
-      {/* Detail Modal */}
-      {selectedBooking && (
-        <Modal animationType="slide" transparent visible={!!selectedBooking}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
-                  Booking Details #{selectedBooking.id}
-                </Text>
-                <TouchableOpacity onPress={() => setSelectedBooking(null)}>
-                  <Ionicons name="close" size={24} color="#374151" />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <DetailRow label="Customer Name" value={selectedBooking.name} />
-                <DetailRow label="10-Digit Phone" value={sanitizePhone10Digit(selectedBooking.phone)} />
-                <DetailRow label="Service Required" value={selectedBooking.service} />
-                <DetailRow label="Date & Shift" value={`${selectedBooking.date} (${selectedBooking.shift})`} />
-                <DetailRow label="Location" value={selectedBooking.location} />
-                <DetailRow label="Estimated Budget" value={selectedBooking.budget} />
-                <DetailRow label="Message / Instructions" value={selectedBooking.message} />
-
-                <Text style={styles.actionHeader}>Update Booking Status:</Text>
-                <View style={styles.statusActionRow}>
-                  <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: '#FEF3C7' }]}
-                    onPress={() => updateBookingStatus(selectedBooking.id, 'Pending')}
-                  >
-                    <Text style={[styles.actionBtnText, { color: '#D97706' }]}>Pending</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: '#E0F2F1' }]}
-                    onPress={() => updateBookingStatus(selectedBooking.id, 'Confirmed')}
-                  >
-                    <Text style={[styles.actionBtnText, { color: '#059669' }]}>Confirm</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: '#DCFCE7' }]}
-                    onPress={() => updateBookingStatus(selectedBooking.id, 'Completed')}
-                  >
-                    <Text style={[styles.actionBtnText, { color: '#16A34A' }]}>Complete</Text>
-                  </TouchableOpacity>
+        {activeTab === 'bookings' ? (
+          bookings.map(item => (
+            <TouchableOpacity key={item.id} style={[styles.bookingCard, { backgroundColor: colors.card }]} onPress={() => setEditModal({ visible: true, data: item, type: 'booking' })}>
+              <View style={styles.row}>
+                <Text style={[styles.bTitle, { color: colors.text }]}>{item.service}</Text>
+                <View style={[styles.badge, { backgroundColor: item.status === 'Completed' ? '#D1FAE5' : '#FEE2E2' }]}>
+                  <Text style={[styles.badgeTxt, { color: item.status === 'Completed' ? '#065F46' : '#991B1B' }]}>{item.status}</Text>
                 </View>
-              </ScrollView>
-            </View>
+              </View>
+              <Text style={styles.bSub}>Client: {item.name || 'Anonymous'}</Text>
+              <Text style={styles.bSub}>Contact: {item.phone || 'N/A'}</Text>
+              <Text style={styles.bSub}>Date: {item.date}</Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          professionals.map(item => (
+            <TouchableOpacity key={item.id} style={[styles.bookingCard, { backgroundColor: colors.card }]} onPress={() => setEditModal({ visible: true, data: item, type: 'pro' })}>
+              <View style={styles.row}>
+                <Text style={[styles.bTitle, { color: colors.text }]}>{item.name}</Text>
+                <View style={[styles.badge, { backgroundColor: item.verification === 'Verified' ? '#DBEAFE' : '#F3F4F6' }]}>
+                  <Text style={[styles.badgeTxt, { color: '#1E40AF' }]}>{item.verification || 'Pending'}</Text>
+                </View>
+              </View>
+              <Text style={styles.bSub}>Role: {item.expertise}</Text>
+              <Text style={styles.bSub}>Experience: {item.experience} Years</Text>
+              <Text style={styles.bSub}>Applied: {item.date}</Text>
+            </TouchableOpacity>
+          ))
+        )}
+
+        {(activeTab === 'bookings' ? bookings : professionals).length === 0 && (
+          <View style={styles.emptyWrap}>
+             <Ionicons name="folder-open-outline" size={60} color="#CCC" />
+             <Text style={styles.empty}>No records found in system.</Text>
           </View>
-        </Modal>
-      )}
+        )}
+      </ScrollView>
+
+      {/* MODAL FOR STATUS UPDATES */}
+      <Modal visible={editModal.visible} transparent animationType="slide">
+        <View style={styles.modalOver}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Manage {editModal.type === 'booking' ? 'Booking' : 'Professional'}</Text>
+            <Text style={styles.modalSub}>{editModal.data?.name || editModal.data?.service}</Text>
+
+            {editModal.type === 'booking' ? (
+              <>
+                <TouchableOpacity style={styles.opt} onPress={() => updateStatus(editModal.data?.id, 'Completed', 'booking')}>
+                  <Text style={styles.optTxt}>Mark as Completed</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.opt} onPress={() => updateStatus(editModal.data?.id, 'Canceled', 'booking')}>
+                  <Text style={[styles.optTxt, { color: 'red' }]}>Cancel Booking</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity style={styles.opt} onPress={() => updateStatus(editModal.data?.id, 'Verified', 'pro')}>
+                  <Text style={[styles.optTxt, { color: '#3B82F6' }]}>Approve & Verify Pro</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.opt} onPress={() => updateStatus(editModal.data?.id, 'Rejected', 'pro')}>
+                  <Text style={[styles.optTxt, { color: 'red' }]}>Reject Application</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            <TouchableOpacity style={styles.close} onPress={() => setEditModal({ visible: false, data: null, type: '' })}>
+              <Text style={{ fontWeight: 'bold' }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
-    </View>
-  );
-}
-
-function getStatusStyle(status: BookingItem['status']) {
-  switch (status) {
-    case 'Confirmed':
-      return { backgroundColor: '#E0F2F1' };
-    case 'Completed':
-      return { backgroundColor: '#DCFCE7' };
-    case 'Cancelled':
-      return { backgroundColor: '#FEE2E2' };
-    default:
-      return { backgroundColor: '#FEF3C7' };
-  }
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F6F9F8' },
+  loginContainer: { flex: 1, backgroundColor: '#134E4A' },
+  topSection: { paddingHorizontal: 20, paddingBottom: 20 },
+  fakeHeader: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+  headerLogo: { width: 35, height: 35, borderRadius: 17.5, backgroundColor: '#FFF' },
+  headerTitle: { color: '#FFF', fontSize: 20, fontWeight: 'bold', marginLeft: 10, flex: 1 },
+  headerIcons: { flexDirection: 'row', alignItems: 'center' },
+  heroCenter: { alignItems: 'center', marginTop: 30 },
+  lockCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
+  heroBrand: { color: '#FFF', fontSize: 26, fontWeight: 'bold', marginTop: 15 },
+  heroTag: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 'bold', letterSpacing: 1, marginTop: 5 },
+  formContainer: { flex: 1, marginTop: -40 },
+  formScroll: { flexGrow: 1 },
+  whiteCard: { backgroundColor: '#FFF', borderTopLeftRadius: 40, borderTopRightRadius: 40, flex: 1, padding: 35, alignItems: 'center' },
+  signInTitle: { alignSelf: 'flex-start', fontSize: 28, fontWeight: 'bold', color: '#111827', marginBottom: 25 },
+  phoneInputBox: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 15, height: 55, width: '100%', paddingHorizontal: 15, marginBottom: 20 },
+  flag: { fontSize: 20, marginRight: 10, paddingRight: 10, borderRightWidth: 1, borderRightColor: '#E5E7EB' },
+  inputField: { flex: 1, fontSize: 16, color: '#111827', paddingLeft: 10 },
+  pinLabelRow: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
+  pinLabel: { fontSize: 14, fontWeight: 'bold', color: '#6B7280' },
+  pinGrid: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 30 },
+  pinInput: { width: 55, height: 60, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 15, textAlign: 'center', fontSize: 24, fontWeight: 'bold', backgroundColor: '#F9FAFB' },
+  loginBtn: { backgroundColor: '#2D5A57', width: '75%', height: 60, borderRadius: 18, justifyContent: 'center', alignItems: 'center', elevation: 4 },
+  loginBtnText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+  divider: { width: '100%', height: 1, backgroundColor: '#F3F4F6', marginVertical: 30 },
+  footerLinks: { alignItems: 'center' },
+  joinText: { color: '#6B7280', fontSize: 14, fontWeight: 'bold' },
+  link: { color: '#2D5A57', fontWeight: 'bold' },
 
-  /* LOGIN SCROLL CONTENT */
-  loginScrollContent: {
-    paddingHorizontal: wp('5.5%'),
-    paddingBottom: hp('4%'),
-    paddingTop: hp('2%'),
-  },
-  headerBox: { marginBottom: hp('2%'), alignItems: 'center' },
-  logoImage: {
-    width: wp('20%'),
-    height: wp('20%'),
-    marginBottom: hp('0.8%'),
-  },
-  brandTitle: {
-    fontSize: wp('4.2%'),
-    fontWeight: '800',
-    color: '#0D9488',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  loginTitle: { fontSize: wp('6.5%'), fontWeight: '800', color: '#064E3B', marginTop: hp('0.2%') },
-  loginSub: { fontSize: wp('3.4%'), color: '#295C59', marginTop: hp('0.5%'), textAlign: 'center', paddingHorizontal: wp('3%') },
-
-  /* CREDENTIALS FORM CARD */
-  formCard: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: wp('5%'), elevation: 3 },
-  label: { fontSize: wp('3.4%'), fontWeight: '700', color: '#374151', marginBottom: hp('0.6%'), marginTop: hp('1%') },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
-    paddingHorizontal: wp('3.5%'),
-    height: hp('5.8%'),
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  fieldIcon: {
-    marginRight: wp('2.5%'),
-  },
-  inputField: {
-    flex: 1,
-    fontSize: wp('3.8%'),
-    color: '#1F2937',
-  },
-  loginBtn: { marginTop: hp('2.5%'), borderRadius: 10, overflow: 'hidden' },
-  gradientBtn: { paddingVertical: hp('1.8%'), alignItems: 'center' },
-  loginBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: wp('4%') },
-
-  /* 4-DIGIT PIN CARD */
-  pinCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: wp('5%'),
-    marginTop: hp('2%'),
-    alignItems: 'center',
-    elevation: 3,
-  },
-  pinTitle: {
-    fontSize: wp('4.4%'),
-    fontWeight: '800',
-    color: '#064E3B',
-  },
-  pinSub: {
-    fontSize: wp('3.2%'),
-    color: '#6B7280',
-    marginTop: hp('0.4%'),
-    marginBottom: hp('1.8%'),
-  },
-  pinRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '80%',
-    marginBottom: hp('0.5%'),
-  },
-  pinInputBox: {
-    width: wp('12%'),
-    height: wp('12%'),
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#F9FAFB',
-    textAlign: 'center',
-    fontSize: wp('5%'),
-    fontWeight: '800',
-    color: '#064E3B',
-  },
-  pinInputBoxActive: {
-    borderColor: '#064E3B',
-    backgroundColor: '#E6F4F1',
-  },
-
-  backHomeBtn: { marginTop: hp('2%'), alignItems: 'center' },
-  backHomeText: { color: '#295C59', fontWeight: '600', fontSize: wp('3.5%') },
-
-  joinNowLink: {
-    marginTop: hp('3%'),
-    alignItems: 'center',
-  },
-  joinNowText: {
-    fontSize: wp('3.5%'),
-    color: '#4B5563',
-  },
-  joinNowBold: {
-    color: '#064E3B',
-    fontWeight: '700',
-    textDecorationLine: 'underline',
-  },
-
-  /* ADMIN DASHBOARD HEADER */
-  adminDashboardHeader: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: wp('4.5%'),
-    paddingTop: hp('1.5%'),
-    paddingBottom: hp('1.2%'),
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  adminTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: hp('1.2%'),
-  },
-  adminTitleLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  adminControlTitle: {
-    fontSize: wp('4.5%'),
-    fontWeight: '800',
-    color: '#064E3B',
-  },
-  logoutPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEE2E2',
-    paddingHorizontal: wp('2.8%'),
-    paddingVertical: hp('0.5%'),
-    borderRadius: 20,
-    gap: 4,
-  },
-  logoutPillText: {
-    fontSize: wp('2.8%'),
-    fontWeight: '700',
-    color: '#DC2626',
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    paddingHorizontal: wp('3%'),
-    height: 40,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: wp('2%'),
-    fontSize: wp('3.4%'),
-    color: '#1F2937',
-  },
-
-  /* FILTER TABS BELOW HEADER */
-  tabsContainer: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: hp('1.2%'),
-    paddingHorizontal: wp('3.5%'),
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  tabChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: wp('3.5%'),
-    paddingVertical: hp('0.8%'),
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    marginRight: wp('2%'),
-  },
-  tabChipActive: {
-    backgroundColor: '#064E3B',
-  },
-  tabChipText: {
-    fontSize: wp('3.2%'),
-    fontWeight: '700',
-    color: '#4B5563',
-  },
-  tabChipTextActive: {
-    color: '#FFFFFF',
-  },
-  tabBadge: {
-    backgroundColor: '#E5E7EB',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    marginLeft: 6,
-  },
-  tabBadgeActive: {
-    backgroundColor: '#047857',
-  },
-  tabBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#374151',
-  },
-  tabBadgeTextActive: {
-    color: '#FFFFFF',
-  },
-
-  /* CARDS LIST */
-  listContent: { padding: wp('4.5%') },
-  bookingCard: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: wp('4%'), marginBottom: hp('1.5%'), elevation: 2 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  customerName: { fontSize: wp('4.2%'), fontWeight: '800', color: '#064E3B' },
-  statusBadge: { paddingHorizontal: wp('2.5%'), paddingVertical: hp('0.4%'), borderRadius: 6 },
-  statusText: { fontSize: wp('2.8%'), fontWeight: '800', color: '#064E3B' },
-  serviceTitle: { fontSize: wp('3.6%'), fontWeight: '700', color: '#295C59', marginTop: hp('0.5%') },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: hp('0.8%') },
-  infoText: { fontSize: wp('3.2%'), color: '#6B7280' },
-
-  emptyBox: { alignItems: 'center', marginTop: hp('8%') },
-  emptyText: { color: '#9CA3AF', marginTop: hp('1%'), fontSize: wp('3.8%') },
-
-  /* MODAL */
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: wp('5%'), maxHeight: hp('80%') },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: hp('2%') },
-  modalTitle: { fontSize: wp('4.8%'), fontWeight: '800', color: '#064E3B' },
-  detailRow: { marginBottom: hp('1.2%') },
-  detailLabel: { fontSize: wp('3%'), color: '#6B7280', fontWeight: '600', textTransform: 'uppercase' },
-  detailValue: { fontSize: wp('3.8%'), color: '#1F2937', fontWeight: '700', marginTop: hp('0.2%') },
-  actionHeader: { fontSize: wp('3.8%'), fontWeight: '800', color: '#064E3B', marginTop: hp('2%'), marginBottom: hp('1%') },
-  statusActionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: hp('0.5%') },
-  actionBtn: { flex: 1, paddingVertical: hp('1.2%'), borderRadius: 8, alignItems: 'center', marginHorizontal: wp('1%') },
-  actionBtnText: { fontWeight: '800', fontSize: wp('3.2%') },
-}); 
+  // PORTAL STYLES
+  adminHeader: { backgroundColor: '#064E3B', padding: 25, paddingTop: 40, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  greeting: { fontSize: 22, fontWeight: 'bold', color: '#FFF' },
+  subGreeting: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 },
+  logoutBtn: { padding: 10, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.1)' },
+  dashContent: { padding: 20, paddingBottom: 40 },
+  revenueCard: { padding: 25, borderRadius: 24, marginBottom: 20, elevation: 5 },
+  revRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  revLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '800' },
+  revVal: { color: '#FFF', fontSize: 28, fontWeight: 'bold', marginTop: 5 },
+  masterBox: { padding: 20, backgroundColor: '#F9FAFB', borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 25 },
+  secTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 15 },
+  controlGrid: { flexDirection: 'row', gap: 10 },
+  cMiniBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderRadius: 12, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F3F4F6' },
+  cMiniTxt: { fontSize: 13, fontWeight: 'bold' },
+  tabRow: { flexDirection: 'row', marginBottom: 20, gap: 10 },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 12, backgroundColor: '#F3F4F6' },
+  activeTab: { backgroundColor: '#064E3B' },
+  tabTxt: { fontSize: 13, fontWeight: '700', color: '#6B7280' },
+  activeTabTxt: { color: '#FFF' },
+  bookingCard: { padding: 18, borderRadius: 18, marginBottom: 12, elevation: 2 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  bTitle: { fontSize: 16, fontWeight: 'bold' },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  badgeTxt: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+  bSub: { fontSize: 12, color: '#6B7280', marginTop: 4 },
+  emptyWrap: { alignItems: 'center', marginTop: 60 },
+  empty: { textAlign: 'center', marginTop: 15, color: '#9CA3AF', fontWeight: 'bold' },
+  modalOver: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: '#FFF', padding: 30, borderTopLeftRadius: 30, borderTopRightRadius: 30 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 5 },
+  modalSub: { color: '#6B7280', marginBottom: 20, fontSize: 14 },
+  opt: { padding: 18, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  optTxt: { fontSize: 16, fontWeight: 'bold', color: '#2D5A57' },
+  close: { marginTop: 25, alignItems: 'center', padding: 10 }
+});

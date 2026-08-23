@@ -1,158 +1,139 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, View, Image, Text, StatusBar, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Linking, Alert, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../src/context/ThemeContext';
+import { useNavigation, router } from 'expo-router';
+import { DrawerActions } from '@react-navigation/native';
 
-export default function Header2() {
-  const navigation = useNavigation<any>();
+interface HeaderProps {
+  title?: string;
+  showBack?: boolean;
+}
 
-  // WhatsApp Handler Function
-  const openWhatsApp = async () => {
-    const phoneNumber = '977981152774'; // Full number with country code
-    const message = 'Hello Cleaning Sewa, I would like to inquire about your services.';
-    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-    const webUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+export default function Header2({ title, showBack = false }: HeaderProps) {
+  const insets = useSafeAreaInsets();
+  const { isDarkMode, colors } = useTheme();
+  const navigation = useNavigation();
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      router.replace('/(drawer)/(tabs)');
+    }
+  };
+
+  const handleOpenDrawer = () => {
+    try {
+      navigation.dispatch(DrawerActions.openDrawer());
+    } catch {
+      router.replace('/(drawer)/(tabs)');
+    }
+  };
+
+  const handleWhatsApp = async () => {
+    const phoneNumber = '9779851152774';
+    const message = encodeURIComponent('Hello Cleaning Sewa, I have an inquiry.');
+    const url = `whatsapp://send?phone=${phoneNumber}&text=${message}`;
+    const webUrl = `https://wa.me/${phoneNumber}?text=${message}`;
     try {
       const supported = await Linking.canOpenURL(url);
       if (supported) {
         await Linking.openURL(url);
       } else {
-        // Fallback to web browser if WhatsApp app is not installed
         await Linking.openURL(webUrl);
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Unable to open WhatsApp.');
     }
   };
 
   return (
-    <>
-      <StatusBar barStyle="light-content" backgroundColor="#064E3B" />
-      <LinearGradient
-        colors={['#064E3B', '#064E3B']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
-      >
-        <View style={styles.subHeader}>
-          <View style={styles.left}>
-            <View style={styles.iconContainer}>
-              <Image
-                source={require('../assets/images/icon.png')}
-                style={styles.leftIcon}
-              />
-              <View style={styles.iconGlow} />
-            </View>
-            <View>
-              <Text style={styles.title}>Cleaning Sewa</Text>
-            </View>
-          </View>
+    <View
+      style={[
+        styles.header,
+        {
+          backgroundColor: isDarkMode ? (colors.card || '#111827') : '#064E3B',
+          paddingTop: Math.max(insets.top, 10),
+        },
+      ]}
+    >
+      <StatusBar barStyle="light-content" />
+      <View style={styles.leftContainer}>
+        {showBack ? (
+          <TouchableOpacity onPress={handleBack} style={styles.backBtn} activeOpacity={0.7}>
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        ) : (
+          <Image source={require('../assets/images/icon.png')} style={styles.logo} />
+        )}
+        <Text style={styles.brandName} numberOfLines={1}>
+          {title || 'Cleaning Sewa'}
+        </Text>
+      </View>
 
-          <View style={styles.right}>
-            {/* WhatsApp Button connected to openWhatsApp */}
-            <TouchableOpacity
-              style={styles.notificationButton}
-              activeOpacity={0.7}
-              onPress={openWhatsApp}
-            >
-              <Image
-                source={require('../assets/whatsapp.png')}
-                style={styles.rightIcon}
-              />
-            </TouchableOpacity>
+      <View style={styles.rightContainer}>
+        <TouchableOpacity style={styles.iconButton} onPress={handleWhatsApp} activeOpacity={0.7}>
+          <Ionicons name="logo-whatsapp" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.menuButton}
-              onPress={() =>
-                navigation.dispatch(DrawerActions.openDrawer())
-              }
-              activeOpacity={0.8}
-            >
-              <View>
-                <Ionicons name="menu" size={35} color='#fff' />
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </LinearGradient>
-    </>
+        {!showBack && (
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={handleOpenDrawer}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="menu-outline" size={32} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    height: 100,
-    paddingTop: 45,
-    paddingBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  subHeader: {
+    paddingBottom: 12,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  leftContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
     flex: 1,
+    marginRight: 10,
   },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  backBtn: {
+    paddingRight: 10,
+    paddingVertical: 5,
   },
-  right: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  iconContainer: {
-    position: 'relative',
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconGlow: {
-    position: 'absolute',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-  },
-  leftIcon: {
-    width: 39,
-    height: 39,
+  logo: {
+    width: 42,
+    height: 42,
     resizeMode: 'contain',
-    zIndex: 1,
+    marginRight: 10,
+    borderRadius: 21,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
+  brandName: {
     color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900',
     letterSpacing: 0.5,
-    textShadowColor: 'rgba(0,0,0,0.2)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
-  notificationButton: {
-    position: 'relative',
-    padding: 8,
-    borderRadius: 20,
+  rightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  rightIcon: {
-    width: 30,
-    height: 30,
-    resizeMode: 'contain',
-  },
-  menuButton: {
-    padding: 4,
+  iconButton: {
+    marginLeft: 15,
+    padding: 2,
   },
 });

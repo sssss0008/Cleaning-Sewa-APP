@@ -2,44 +2,32 @@ import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import 'react-native-url-polyfill/auto';
 
-// Prevents splash screen from hiding prematurely before AsyncStorage check completes
-SplashScreen.preventAutoHideAsync();
-
-type Route = '/Home' | '/onboarding1';
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function Index() {
-  const [route, setRoute] = useState<Route | null>(null);
+  const [route, setRoute] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-
     const prepare = async () => {
       try {
         const seen = await AsyncStorage.getItem('hasSeenOnboarding');
-        if (!mounted) return;
-        setRoute(seen === 'true' ? '/Home' : '/onboarding1');
-      } catch {
-        if (!mounted) return;
+        if (seen === 'true') {
+          // If onboarding seen, go to the main tabs inside drawer
+          setRoute('/(drawer)/(tabs)');
+        } else {
+          // New user, go to onboarding sequence
+          setRoute('/onboarding1');
+        }
+      } catch (error) {
         setRoute('/onboarding1');
       } finally {
-        if (mounted) {
-          await SplashScreen.hideAsync();
-        }
+        await SplashScreen.hideAsync().catch(() => {});
       }
     };
-
     prepare();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
-  if (!route) {
-    return null;
-  }
-
-  return <Redirect href={route} />;
+  if (!route) return null;
+  return <Redirect href={route as any} />;
 }

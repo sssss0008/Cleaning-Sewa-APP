@@ -1,56 +1,36 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import Header3 from '../../components/Header3drawer';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function PrivacyPolicyScreen() {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Header3 />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Privacy Policy</Text>
-        <Text style={styles.lastUpdated}>Last Updated: May 2024</Text>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={[styles.title, { color: '#064E3B' }]}>Privacy Policy</Text>
+        <Text style={[styles.date, { color: colors.subText }]}>Last Updated: June 2026</Text>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>1. Introduction</Text>
-          <Text style={styles.text}>
-            CleaningSewa ("we", "us", or "our") respects your privacy and is committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website or use our mobile application.
+          <Text style={[styles.secTitle, { color: colors.text }]}>1. Information Collection</Text>
+          <Text style={[styles.text, { color: colors.subText }]}>
+            We collect personal information such as name, phone number, and location only when you book a service or apply as a professional.
           </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>2. Data We Collect</Text>
-          <Text style={styles.text}>
-            We may collect, use, store and transfer different kinds of personal data about you which we have grouped together as follows:
-          </Text>
-          <Text style={styles.bullet}>• Identity Data: First name, last name, username or similar identifier.</Text>
-          <Text style={styles.bullet}>• Contact Data: Billing address, delivery address, email address and telephone numbers.</Text>
-          <Text style={styles.bullet}>• Technical Data: IP address, your login data, browser type and version, time zone setting and location.</Text>
-          <Text style={styles.bullet}>• Usage Data: Information about how you use our website, products and services.</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>3. How We Use Your Data</Text>
-          <Text style={styles.text}>
-            We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:
-          </Text>
-          <Text style={styles.bullet}>• To register you as a new customer.</Text>
-          <Text style={styles.bullet}>• To process and deliver your service booking.</Text>
-          <Text style={styles.bullet}>• To manage our relationship with you.</Text>
-          <Text style={styles.bullet}>• To improve our website, app, products/services, marketing, customer relationships and experiences.</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>4. Data Security</Text>
-          <Text style={styles.text}>
-            We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorized way, altered or disclosed.
+          <Text style={[styles.secTitle, { color: colors.text }]}>2. How We Use Data</Text>
+          <Text style={[styles.text, { color: colors.subText }]}>
+            Your data is used to facilitate cleaning services, process simulated eSewa payments, and improve your user experience.
           </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>5. Your Legal Rights</Text>
-          <Text style={styles.text}>
-            Under certain circumstances, you have rights under data protection laws in relation to your personal data, including the right to request access, correction, erasure, restriction, transfer, to object to processing, to portability of data and (where the lawful ground of processing is consent) to withdraw consent.
+          <Text style={[styles.secTitle, { color: colors.text }]}>3. Data Security</Text>
+          <Text style={[styles.text, { color: colors.subText }]}>
+            All sensitive information, including booking history, is stored securely on your local device and is not shared with unauthorized third parties.
           </Text>
         </View>
       </ScrollView>
@@ -59,46 +39,10 @@ export default function PrivacyPolicyScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContent: {
-    paddingHorizontal: wp('6%'),
-    paddingTop: hp('3%'),
-    paddingBottom: hp('5%'),
-  },
-  title: {
-    fontSize: wp('7%'),
-    fontWeight: '800',
-    color: '#064E3B',
-    marginBottom: 8,
-  },
-  lastUpdated: {
-    fontSize: wp('3.2%'),
-    color: '#6B7280',
-    marginBottom: hp('3%'),
-  },
-  section: {
-    marginBottom: hp('3%'),
-  },
-  sectionTitle: {
-    fontSize: wp('4.5%'),
-    fontWeight: '700',
-    color: '#1A1A1A',
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: wp('3.8%'),
-    color: '#4B5563',
-    lineHeight: wp('5.5%'),
-    textAlign: 'justify',
-  },
-  bullet: {
-    fontSize: wp('3.8%'),
-    color: '#4B5563',
-    lineHeight: wp('5.5%'),
-    marginBottom: 8,
-    paddingLeft: 10,
-  },
+  container: { padding: 25 },
+  title: { fontSize: 28, fontWeight: '800' },
+  date: { fontSize: 12, marginBottom: 30, marginTop: 5 },
+  section: { marginBottom: 25 },
+  secTitle: { fontSize: 18, fontWeight: '700', marginBottom: 10 },
+  text: { fontSize: 15, lineHeight: 22 }
 });

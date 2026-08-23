@@ -1,41 +1,55 @@
+import React from 'react';
 import {
   Text,
   TouchableOpacity,
   StyleSheet,
   GestureResponderEvent,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
-import React from 'react';
 
 type Props = {
   title?: string;
   onPress?: (event: GestureResponderEvent) => void;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 };
 
-const ButtonComponent = ({title, onPress}: Props) => {
+const ButtonComponent = ({ title, onPress, style, textStyle }: Props) => {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.button}>
-      <Text style={styles.buttonText}>{title}</Text>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      style={[styles.button, style]}
+    >
+      <Text style={[styles.buttonText, textStyle]}>{title}</Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    borderColor: '#000',
-    backgroundColor: 'green',
-
-    borderRadius: 10,
-
+    backgroundColor: '#166534',
+    borderRadius: 12,
     justifyContent: 'center',
-    width: 110,
-    marginBottom:50,
-    paddingVertical:13,
+    alignItems: 'center',
+    minWidth: 130,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    marginBottom: 40,
+    elevation: 3,
+    shadowColor: '#166534',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   buttonText: {
     textAlign: 'center',
-    fontWeight: '500',
-    fontSize: 17,
-    color:'#fff',
+    fontWeight: '700',
+    fontSize: 16,
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
 });
 

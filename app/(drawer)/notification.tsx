@@ -1,193 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
   View,
   Text,
-  Image,
   StyleSheet,
+  ScrollView,
   TouchableOpacity,
+  FlatList,
+  StatusBar
 } from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Header3 from '../../components/Header3drawer';
+import { useTheme } from '../../src/context/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface NotificationProps {
-  visible: boolean;
-  onClose: () => void;
-  onViewMore: () => void;
-}
-
-// Relative asset path from app/(drawer)/notification.tsx to root assets folder
-const POPUP_IMAGE = require('../../assets/CleaningSewa-Photos/bathroom-cleaning.jpg');
-
-export default function Notification({
-  visible,
-  onClose,
-  onViewMore,
-}: NotificationProps) {
-  const [countdown, setCountdown] = useState<number>(10);
-  const [showCloseBtn, setShowCloseBtn] = useState<boolean>(false);
+export default function NotificationScreen() {
+  const { colors, isDarkMode } = useTheme();
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!visible) return;
+    loadNotifications();
+  }, []);
 
-    // Reset states when popup opens
-    setCountdown(10);
-    setShowCloseBtn(false);
+  const loadNotifications = async () => {
+    try {
+      // Mock notifications based on actual app features
+      const mockNotifs = [
+        { id: '1', title: 'Payment Successful', body: 'Your booking for Sofa Cleaning has been confirmed via eSewa.', time: 'Just now', icon: 'checkmark-circle', color: '#10B981' },
+        { id: '2', title: 'New Professional Joined', body: 'Arjun Giri is now available for Deep Cleaning near you.', time: '2 hours ago', icon: 'people', color: '#3B82F6' },
+        { id: '3', title: 'Welcome to CleaningSewa', body: 'Your account is ready. Explore our 33+ services!', time: '1 day ago', icon: 'star', color: '#F59E0B' },
+      ];
+      setNotifications(mockNotifs);
+    } catch (e) { console.error(e); }
+  };
 
-    // 10-second countdown timer
-    const timerInterval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerInterval);
-          setShowCloseBtn(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timerInterval);
-  }, [visible]);
-
-  // When countdown reaches 0 (cross icon appears), auto-close after 2 seconds
-  useEffect(() => {
-    if (showCloseBtn) {
-      const autoCloseTimer = setTimeout(() => {
-        onClose();
-      }, 2000);
-
-      return () => clearTimeout(autoCloseTimer);
-    }
-  }, [showCloseBtn, onClose]);
-
-  if (!visible) return null;
+  const renderNotif = ({ item }: { item: any }) => (
+    <View style={[styles.card, { backgroundColor: isDarkMode ? colors.card : '#FFF' }]}>
+       <View style={[styles.iconCircle, { backgroundColor: item.color + '15' }]}>
+          <Ionicons name={item.icon} size={24} color={item.color} />
+       </View>
+       <View style={styles.content}>
+          <Text style={[styles.nTitle, { color: colors.text }]}>{item.title}</Text>
+          <Text style={[styles.nBody, { color: colors.subText }]}>{item.body}</Text>
+          <Text style={styles.nTime}>{item.time}</Text>
+       </View>
+    </View>
+  );
 
   return (
-    <Modal transparent visible={visible} animationType="fade">
-      <View style={styles.overlay}>
-        <View style={styles.cardContainer}>
-          {/* IMAGE SECTION */}
-          <View style={styles.imageWrapper}>
-            <Image
-              source={POPUP_IMAGE}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+      <Header3 />
 
-            {/* COUNTDOWN BADGE / CROSS ICON */}
-            <View style={styles.badgeContainer}>
-              {!showCloseBtn ? (
-                <Text style={styles.countdownText}>{countdown}</Text>
-              ) : (
-                <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
-                  <Ionicons name="close" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-
-          {/* CONTENT SECTION */}
-          <View style={styles.contentWrapper}>
-            <Text style={styles.titleText}>FLAT 20% OFF DEEP CLEANING</Text>
-
-            <Text style={styles.descriptionText}>
-              Book a professional deep cleaning for monsoon home restoration before this flash price disappears — same-day slots across Kathmandu, Lalitpur & Bhaktapur.
-            </Text>
-
-            <TouchableOpacity
-              style={styles.actionButton}
-              activeOpacity={0.88}
-              onPress={onViewMore}
-            >
-              <Text style={styles.actionButtonText}>VIEW MORE  →</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      <View style={styles.headerBox}>
+         <Text style={[styles.title, { color: isDarkMode ? colors.primary : '#064E3B' }]}>Notification Center</Text>
+         <Text style={styles.sub}>Track all your service updates and payments</Text>
       </View>
-    </Modal>
+
+      <FlatList
+        data={notifications}
+        keyExtractor={i => i.id}
+        renderItem={renderNotif}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+             <Ionicons name="notifications-off-outline" size={60} color="#CCC" />
+             <Text style={styles.emptyTxt}>No new notifications.</Text>
+          </View>
+        }
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: wp('6%'),
-  },
-  cardContainer: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-  },
-  imageWrapper: {
-    width: '100%',
-    height: hp('28%'),
-    position: 'relative',
-  },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-  },
-  badgeContainer: {
-    position: 'absolute',
-    top: hp('1.8%'),
-    right: wp('4%'),
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(30, 50, 48, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  countdownText: {
-    color: '#FFFFFF',
-    fontSize: wp('4.5%'),
-    fontWeight: '800',
-  },
-  contentWrapper: {
-    paddingHorizontal: wp('5.5%'),
-    paddingTop: hp('2.5%'),
-    paddingBottom: hp('3%'),
-  },
-  titleText: {
-    fontSize: wp('5.2%'),
-    fontWeight: '900',
-    color: '#111827',
-    letterSpacing: -0.2,
-    lineHeight: wp('6.5%'),
-    marginBottom: hp('1%'),
-  },
-  descriptionText: {
-    fontSize: wp('3.6%'),
-    color: '#4B5563',
-    lineHeight: wp('5.2%'),
-    fontWeight: '400',
-    marginBottom: hp('2.5%'),
-  },
-  actionButton: {
-    backgroundColor: '#114B43',
-    borderRadius: 12,
-    paddingVertical: hp('1.8%'),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionButtonText: {
-    color: '#FFFFFF',
-    fontSize: wp('4%'),
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
+  headerBox: { padding: 25, paddingBottom: 15 },
+  title: { fontSize: 26, fontWeight: '900' },
+  sub: { fontSize: 13, color: '#6B7280', marginTop: 4 },
+  list: { padding: 20 },
+  card: { flexDirection: 'row', padding: 20, borderRadius: 20, marginBottom: 15, elevation: 3, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 5 },
+  iconCircle: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+  content: { flex: 1 },
+  nTitle: { fontSize: 15, fontWeight: '800', marginBottom: 4 },
+  nBody: { fontSize: 13, lineHeight: 18 },
+  nTime: { fontSize: 11, color: '#9CA3AF', marginTop: 10, fontWeight: '600' },
+  empty: { alignItems: 'center', marginTop: 100 },
+  emptyTxt: { color: '#999', marginTop: 15, fontSize: 15 }
 });

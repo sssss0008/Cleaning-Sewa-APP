@@ -1,109 +1,73 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, LayoutAnimation, Platform, UIManager } from 'react-native';
+import Header3 from '../../components/Header3drawer';
+import { useTheme } from '../../src/context/ThemeContext';
+import { FaqsData } from '../../src/data/FaqsData';
+import { Ionicons } from '@expo/vector-icons';
 
-import { FaqsData } from '../../src/data/FAQsData';
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-import Header3 from '@/components/Header3drawer';
+const FAQAccordion = ({ question, answer }: { question: string, answer: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const { colors, isDarkMode } = useTheme();
 
-type FaqItem = {
-  id: number;
-  question: string;
-  answer: string;
-};
-
-type Props = {
-  navigation?: any;
-};
-
-export default function FaqsScreen() {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-
-  const toggleItem = (id: number) => {
-    setExpandedId(prev => (prev === id ? null : id));
+  const toggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(!expanded);
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <Header3 />
-
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-
-        <View style={styles.container}>
-          <Text style={styles.title}>Frequently Asked Questions</Text>
-
-          {(FaqsData as FaqItem[]).map((item) => {
-            const isOpen = expandedId === item.id;
-
-            return (
-              <TouchableOpacity
-                key={item.id}
-                activeOpacity={0.8}
-                onPress={() => toggleItem(item.id)}
-                style={styles.card}
-              >
-                <Text style={styles.cardTitle}>
-                 {item.question}
-                </Text>
-
-                {isOpen && (
-                  <Text style={styles.cardSubtitle}>
-                    {item.answer}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            );
-          })}
+    <TouchableOpacity
+      style={[styles.faqCard, { backgroundColor: isDarkMode ? colors.card : '#FFF' }]}
+      onPress={toggle}
+      activeOpacity={0.8}
+    >
+      <View style={styles.faqHeader}>
+        <View style={styles.qLeft}>
+          {/* LOGO ON EACH QUESTION AS REQUESTED */}
+          <Image source={require('../../assets/images/icon.png')} style={styles.qLogo} />
+          <Text style={[styles.qTxt, { color: colors.text }]}>{question}</Text>
         </View>
-      </ScrollView>
-    </View>
+        <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={18} color="#064E3B" />
+      </View>
+      {expanded && (
+        <View style={styles.faqBody}>
+          <Text style={[styles.aTxt, { color: colors.subText }]}>{answer}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 };
 
+export default function FAQsScreen() {
+  const { colors } = useTheme();
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Header3 />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
+        <Text style={[styles.title, { color: '#064E3B' }]}>Service FAQs</Text>
+        <Text style={[styles.sub, { color: colors.subText }]}>Commonly asked questions about our standards</Text>
+
+        {FaqsData.map((item) => (
+          <FAQAccordion key={item.id} question={item.question} answer={item.answer} />
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-
-  container: {
-    paddingHorizontal: wp('6%'),
-    paddingTop: hp('2%'),
-  },
-
-  title: {
-    fontSize: wp('5.8%'),
-    fontWeight: '900',
-    color: '#064E3B',
-    marginBottom: hp('5%'),
-    marginTop: hp('2%')
-  },
-
-  card: {
-    width: '100%',
-    padding: 15,
-    marginBottom: hp('3%'),
-    borderRadius: 15,
-    backgroundColor: '#fff',
-    elevation: 2,
-    borderColor: 'hsl(160, 51%, 70%)',
-    borderWidth: 1,
-  },
-
-  cardTitle: {
-    fontSize: wp('4%'),
-    fontWeight: '700',
-    color: 'hsl(164, 86%, 15%)',
-    marginBottom: 6,
-  },
-
-  cardSubtitle: {
-    fontSize: wp('3.6%'),
-    color: '#000',
-    fontWeight: '500',
-    lineHeight: 20,
-  },
+  container: { padding: 20, paddingBottom: 40 },
+  title: { fontSize: 26, fontWeight: '900' },
+  sub: { fontSize: 13, marginTop: 5, marginBottom: 25 },
+  faqCard: { padding: 15, borderRadius: 16, marginBottom: 12, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+  faqHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  qLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 },
+  qLogo: { width: 22, height: 22, marginRight: 10, resizeMode: 'contain' },
+  qTxt: { fontSize: 14, fontWeight: '700', flex: 1 },
+  faqBody: { marginTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 12 },
+  aTxt: { fontSize: 13, lineHeight: 18, fontWeight: '400' }
 });

@@ -1,383 +1,160 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image, Pressable, Alert, Platform } from 'react-native';
-import { area, positionAppliedFor } from '../../src/data/Data';
-import TextArea from '../../components/bookings/TextArea';
-import SubmitOverlay from '../../components/bookings/SubmitOverlay';
-import countryLogo from '../../assets/header/nepal-flag-icon-256.png';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import FileUploadBox from '../../components/bookings/FileUploadBox';
-import ClearFormIcon from '../../assets/icons/booking/clear.png';
-import DropdownAdd from '../../components/bookings/DropdownAdd';
-import Header3 from '../../components/Header3drawer';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  Image
+} from 'react-native';
+import Header3 from '../../components/Header3drawer'; // FIXED PATH
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { careerService } from '../../src/services/careerService';
-
-const { width, height } = Dimensions.get('window');
-
-interface ButtonProps {
-  children: React.ReactNode;
-  style?: any;
-  textStyle?: any;
-  onPress: () => void;
-}
-
-const Button = ({ children, style, textStyle, onPress }: ButtonProps) => {
-  return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={style}>
-      <Text style={[styles.text, textStyle]}> {children} </Text>
-    </TouchableOpacity>
-  );
-};
-
-export type FileItem = {
-  uri: string;
-  fileName?: string;
-};
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function CareerScreen() {
-  const scrollRef = useRef<KeyboardAwareScrollView>(null);
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [experience, setExperience] = useState('');
-  const [emergencyNumber, setEmergencyNumber] = useState('');
-  const [coverMessage, setCoverMessage] = useState('');
-  // photos
-  const [selectedCV, setSelectedCV] = useState<FileItem[]>([]);
-  const [selectedID, setSelectedID] = useState<FileItem[]>([]);
-  // dropdown states
-  const [selectedExpertise, setSelectedExpertise] = useState<string[]>([]);
-  const [selectedArea, setSelectedArea] = useState<string[]>([]);
-  const [overlayVisible, setOverlayVisible] = useState(false);
-  const [overlayStatus, setOverlayStatus] = useState<'loading' | 'success'>('loading');
-  // Shared active focus state system mapping layout changes
-  const [activeInput, setActiveInput] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [gender, setGender] = useState('Male');
+  const [image, setImage] = useState<string | null>(null);
+  const [f, setF] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    expertise: '',
+    experience: '5',
+    city: '',
+    area: '',
+    emergency: '',
+    referral: '',
+    message: '',
+    accepted: false
+  });
 
-  // Validate JPG/PNG files
-  const isJpgOrPng = (file: FileItem) => {
-    const fileName = file.fileName || file.uri;
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    return ext === 'jpg' || ext === 'jpeg' || ext === 'png';
-  };
-
-  const clearAllFields = () => {
-    setName('');
-    setNumber('');
-    setEmail('');
-    setMessage('');
-    setExperience('');
-    setEmergencyNumber('');
-    setCoverMessage('');
-    setSelectedCV([]);
-    setSelectedID([]);
-    setSelectedExpertise([]);
-    setSelectedArea([]);
-    setActiveInput(null);
-  };
-
-  const handleClearForm = () => {
-    Alert.alert(
-      'Clear Form',
-      'Are you sure you want to clear all fields?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Yes, Clear', style: 'destructive', onPress: clearAllFields },
-      ]
-    );
-  };
-
-  const handleSubmit = async () => {
-    // Validate required fields
-    const isMissingRequiredFields =
-      !name.trim() ||
-      !number.trim() ||
-      !email.trim() ||
-      selectedExpertise.length === 0 ||
-      !experience.trim() ||
-      selectedID.length === 0 ||
-      selectedArea.length === 0 ||
-      !emergencyNumber.trim() ||
-      !coverMessage.trim() ||
-      !message.trim();
-
-    if (isMissingRequiredFields) {
-      Alert.alert(
-        'Required Fields Missing',
-        'Please fill in all required fields marked with an asterisk (*) before submitting.'
-      );
-      return;
-    }
-
-    // Basic email format check
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
-      return;
-    }
-
-    // Check files before submitting
-    const allFiles = [...selectedID, ...selectedCV];
-    const invalidFiles = allFiles.filter(file => !isJpgOrPng(file));
-    if (invalidFiles.length > 0) {
-      Alert.alert('Invalid File Type', 'Please upload only .jpg or .png images.');
-      return;
-    }
-
-    setOverlayStatus('loading');
-    setOverlayVisible(true);
-
-    const result = await careerService.submitApplication({
-      full_name: name,
-      phone: number,
-      email: email,
-      position_applied: selectedExpertise.join(', '),
-      experience_years: parseInt(experience) || 0,
-      preferred_area: selectedArea,
-      emergency_contact: emergencyNumber,
-      cover_letter: coverMessage,
-      short_bio: message,
-      id_proof_urls: selectedID.map(f => f.uri), // Storage upload would happen first in production
-      certificate_urls: selectedCV.map(f => f.uri),
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
     });
+    if (!result.canceled) setImage(result.assets[0].uri);
+  };
 
-    if (result.success) {
-      setOverlayStatus('success');
-    } else {
-      setOverlayVisible(false);
-      Alert.alert('Error', result.error || 'Failed to submit application.');
+  const clearForm = () => {
+    setF({ name: '', phone: '', email: '', expertise: '', experience: '5', city: '', area: '', emergency: '', referral: '', message: '', accepted: false });
+    setImage(null);
+    setGender('Male');
+  };
+
+  const submit = async () => {
+    if (!f.name || !f.phone || !f.expertise || !f.city || !f.area || !f.emergency || !f.accepted) {
+       return Alert.alert('Error', 'Please fill all required fields (*) and accept Terms');
     }
+    setLoading(true);
+    try {
+      const existing = await AsyncStorage.getItem('pro_applications');
+      const apps = existing ? JSON.parse(existing) : [];
+      const newApp = { id: Date.now().toString(), ...f, gender, image, date: new Date().toLocaleDateString() };
+      await AsyncStorage.setItem('pro_applications', JSON.stringify([newApp, ...apps]));
+
+      setTimeout(() => {
+        setLoading(false);
+        Alert.alert('Success', 'Your professional profile has been submitted!', [
+          { text: 'View Dashboard', onPress: () => router.push('/ProDashboard') }
+        ]);
+        clearForm();
+      }, 1500);
+    } catch (e) { console.error(e); }
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <Header3 />
-      <SubmitOverlay
-        visible={overlayVisible}
-        status={overlayStatus}
-        onClear={() => {
-          clearAllFields();
-          setOverlayVisible(false);
-        }}
-        onClose={() => setOverlayVisible(false)}
-      />
-      <KeyboardAwareScrollView
-        ref={scrollRef}
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-        extraScrollHeight={80}
-        keyboardShouldPersistTaps="handled"
-        enableResetScrollToCoords={false}
-        resetScrollToCoords={undefined}
-        enableAutomaticScroll={Platform.OS === 'ios'}
-        keyboardDismissMode="on-drag"
-      >
-        <View style={[styles.formContainer, { marginBottom: hp('5%') }]}>
-          <Text style={styles.title}>Join Now</Text>
-          <View style={styles.spacerGap} />
+      <KeyboardAwareScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <Text style={styles.title}>Join Now</Text>
 
-          {/* Full Name */}
-          <Text style={styles.label}>Full Name<Text style={{ color: 'red' }}>*</Text></Text>
-          <TextInput
-            placeholder="Enter your Full Name"
-            value={name}
-            onChangeText={setName}
-            onFocus={() => setActiveInput('name')}
-            onBlur={() => setActiveInput(null)}
-            style={[
-              styles.input,
-              activeInput === 'name' && styles.inputActive
-            ]}
-            placeholderTextColor={'#4B4B4B'}
-            maxLength={30}
-            autoCapitalize="words"
-          />
+        <View style={styles.form}>
+          <Text style={styles.label}>Full Name <Text style={{color:'red'}}>*</Text></Text>
+          <TextInput style={styles.input} placeholder="Enter your Full Name" value={f.name} onChangeText={v => setF({...f, name: v})} />
 
-          {/* Phone Number (Full Nepal Flag) */}
-          <Text style={styles.label}>Phone Number<Text style={{ color: 'red' }}>*</Text></Text>
-          <View style={styles.phoneContainer}>
-            <Image
-              source={countryLogo}
-              style={styles.flagIcon}
-              resizeMode="contain"
-            />
-            <TextInput
-              placeholder="Enter your Phone Number"
-              value={number}
-              onFocus={() => setActiveInput('phone')}
-              onBlur={() => setActiveInput(null)}
-              onChangeText={(value) => {
-                let cleaned = value.replace(/[^0-9]/g, '');
-                cleaned = cleaned.slice(0, 10);
-                let formatted = cleaned;
-                if (cleaned.length > 3 && cleaned.length <= 6) {
-                  formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3);
-                } else if (cleaned.length > 6) {
-                  formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3, 6) + ' ' + cleaned.slice(6);
-                }
-                setNumber(formatted);
-              }}
-              keyboardType="number-pad"
-              style={[
-                styles.phoneInput,
-                activeInput === 'phone' && styles.inputActive
-              ]}
-              placeholderTextColor={'#4B4B4B'}
-              maxLength={12}
-            />
+          <Text style={styles.label}>Phone Number <Text style={{color:'red'}}>*</Text></Text>
+          <View style={styles.phoneWrap}>
+            <Text style={styles.flag}>🇳🇵</Text>
+            <TextInput style={styles.phoneInput} placeholder="98520 24 365" keyboardType="phone-pad" value={f.phone} onChangeText={v => setF({...f, phone: v})} />
           </View>
 
-          {/* Email */}
-          <Text style={styles.label}>Email<Text style={{ color: 'red' }}>*</Text></Text>
-          <TextInput
-            placeholder="Enter your email address"
-            value={email}
-            onChangeText={setEmail}
-            onFocus={() => setActiveInput('email')}
-            onBlur={() => setActiveInput(null)}
-            style={[
-              styles.input,
-              activeInput === 'email' && styles.inputActive
-            ]}
-            placeholderTextColor={'#4B4B4B'}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          {/* Area of Expertise */}
-          <Text style={styles.label}>Position Applied For<Text style={{ color: 'red' }}>*</Text></Text>
-          <DropdownAdd
-            options={positionAppliedFor}
-            placeholder="Select the position you are applying for"
-            placeholderColor="#4B4B4B"
-            value={selectedExpertise}
-            onSelectOption={setSelectedExpertise}
-            onOpen={() => setActiveInput('expertise')}
-            onClose={() => setActiveInput(null)}
-            maxSelections={3}
-          />
-
-          {/* Years of Experience */}
-          <Text style={styles.label}>Years of Experience<Text style={{ color: 'red' }}>*</Text></Text>
-          <TextInput
-            placeholder="Enter your years of experience in the field"
-            value={experience}
-            onFocus={() => setActiveInput('experience')}
-            onBlur={() => setActiveInput(null)}
-            onChangeText={(text) => {
-              const onlyNumbers = text.replace(/[^0-9]/g, '');
-              setExperience(onlyNumbers);
-            }}
-            style={[
-              styles.input,
-              activeInput === 'experience' && styles.inputActive
-            ]}
-            placeholderTextColor={'#4B4B4B'}
-            keyboardType="numeric"
-          />
-
-          {/* ID Proof (JPG/PNG only) */}
-          <Text style={styles.label}>ID Proof (JPG, PNG only)<Text style={{ color: 'red' }}>*</Text></Text>
-          <FileUploadBox
-            value={selectedID}
-            onChange={setSelectedID}
-            maxFiles={5}
-          />
-
-          {/* Preferred Working Area */}
-          <Text style={styles.label}>Preferred Working Area<Text style={{ color: 'red' }}>*</Text></Text>
-          <DropdownAdd
-            options={area}
-            placeholder="Select Maximum 5"
-            placeholderColor="#4B4B4B"
-            value={selectedArea}
-            onSelectOption={setSelectedArea}
-            onOpen={() => setActiveInput('workingArea')}
-            onClose={() => setActiveInput(null)}
-            maxSelections={5}
-          />
-
-          {/* Emergency Contact Number (Full Nepal Flag) */}
-          <Text style={styles.label}>Emergency Contact Number<Text style={{ color: 'red' }}>*</Text></Text>
-          <View style={styles.phoneContainer}>
-            <Image
-              source={countryLogo}
-              style={styles.flagIcon}
-              resizeMode="contain"
-            />
-            <TextInput
-              placeholder="Contact number of Spouse/ family members"
-              value={emergencyNumber}
-              onFocus={() => setActiveInput('emergencyPhone')}
-              onBlur={() => setActiveInput(null)}
-              onChangeText={(value) => {
-                let cleaned = value.replace(/[^0-9]/g, '');
-                cleaned = cleaned.slice(0, 10);
-                let formatted = cleaned;
-                if (cleaned.length > 3 && cleaned.length <= 6) {
-                  formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3);
-                } else if (cleaned.length > 6) {
-                  formatted = cleaned.slice(0, 3) + ' ' + cleaned.slice(3, 6) + ' ' + cleaned.slice(6);
-                }
-                setEmergencyNumber(formatted);
-              }}
-              keyboardType="number-pad"
-              style={[
-                styles.phoneInput,
-                activeInput === 'emergencyPhone' && styles.inputActive
-              ]}
-              placeholderTextColor={'#4B4B4B'}
-              maxLength={12}
-            />
+          <Text style={styles.label}>Gender <Text style={{color:'red'}}>*</Text></Text>
+          <View style={styles.radioRow}>
+             <TouchableOpacity style={styles.radio} onPress={() => setGender('Male')}>
+                <Ionicons name={gender === 'Male' ? "radio-button-on" : "radio-button-off"} size={22} color="#134E4A" />
+                <Text style={styles.radioTxt}>Male</Text>
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.radio} onPress={() => setGender('Female')}>
+                <Ionicons name={gender === 'Female' ? "radio-button-on" : "radio-button-off"} size={22} color="#134E4A" />
+                <Text style={styles.radioTxt}>Female</Text>
+             </TouchableOpacity>
           </View>
 
-          {/* Training Certificate (JPG/PNG only) */}
-          <Text style={styles.label}>Upload Training Certificate (JPG, PNG only)</Text>
-          <FileUploadBox
-            value={selectedCV}
-            onChange={setSelectedCV}
-            maxFiles={10}
-          />
+          <Text style={styles.label}>Headshot / Profile Picture</Text>
+          <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
+            {image ? (
+              <Image source={{uri: image}} style={styles.preview} />
+            ) : (
+              <View style={{alignItems:'center'}}>
+                <Ionicons name="arrow-down-circle-outline" size={32} color="#3B82F6" />
+                <Text style={styles.uploadTxt}>Upload Profile Picture</Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
-          {/* Cover Letter */}
-          <Text style={styles.label}>Cover Letter<Text style={{ color: 'red' }}>*</Text></Text>
-          <TextArea
-            value={coverMessage}
-            onChangeText={setCoverMessage}
-            placeholder=""
-            placeholderTextColor="#4B4B4B"
-            maxHeight={160}
-            onFocus={() => setActiveInput('coverLetter')}
-            onBlur={() => setActiveInput(null)}
-            style={activeInput === 'coverLetter' && styles.inputActive}
-          />
+          <Text style={styles.label}>Email</Text>
+          <TextInput style={styles.input} placeholder="Enter your email address" value={f.email} onChangeText={v => setF({...f, email: v})} />
 
-          {/* Message */}
-          <Text style={styles.label}>Short Bio<Text style={{ color: 'red' }}>*</Text></Text>
-          <TextArea
-            value={message}
-            onChangeText={setMessage}
-            placeholder=""
-            placeholderTextColor="#4B4B4B"
-            maxHeight={160}
-            onFocus={() => setActiveInput('message')}
-            onBlur={() => setActiveInput(null)}
-            style={activeInput === 'message' && styles.inputActive}
-          />
+          <Text style={styles.label}>Your Expertise <Text style={{color:'red'}}>*</Text></Text>
+          <TextInput style={styles.input} placeholder="Select maximum UpTo 5" value={f.expertise} onChangeText={v => setF({...f, expertise: v})} />
 
-          {/* Action Buttons */}
-          <View style={styles.buttonContainer}>
-            <Pressable style={styles.buttonClearFlex} onPress={handleClearForm}>
-              <Image source={ClearFormIcon} style={styles.clearIcon} />
-              <Text style={styles.buttonClear}>Clear form</Text>
-            </Pressable>
-            <Button
-              style={styles.buttonSubmit}
-              onPress={handleSubmit}
-              textStyle={{ color: 'white', textAlign: 'center' }}
-            >
-              Submit
-            </Button>
+          <Text style={styles.label}>Years of Experience <Text style={{color:'red'}}>*</Text></Text>
+          <TextInput style={styles.input} placeholder="5" value={f.experience} onChangeText={v => setF({...f, experience: v})} keyboardType="numeric" />
+
+          <Text style={styles.label}>Preferred City <Text style={{color:'red'}}>*</Text></Text>
+          <TextInput style={styles.input} placeholder="Select your preferred city" value={f.city} onChangeText={v => setF({...f, city: v})} />
+
+          <Text style={styles.label}>Preferred Working Area <Text style={{color:'red'}}>*</Text></Text>
+          <TextInput style={styles.input} placeholder="Select maximum UpTo 5" value={f.area} onChangeText={v => setF({...f, area: v})} />
+
+          <Text style={styles.label}>Emergency Contact Number <Text style={{color:'red'}}>*</Text></Text>
+          <View style={styles.phoneWrap}>
+            <Text style={styles.flag}>🇳🇵</Text>
+            <TextInput style={styles.phoneInput} placeholder="98520 24 365" keyboardType="phone-pad" value={f.emergency} onChangeText={v => setF({...f, emergency: v})} />
+          </View>
+
+          <Text style={styles.label}>Referral Phone Number</Text>
+          <View style={styles.phoneWrap}>
+            <Text style={styles.flag}>🇳🇵</Text>
+            <TextInput style={styles.phoneInput} placeholder="Enter referral phone number" keyboardType="phone-pad" value={f.referral} onChangeText={v => setF({...f, referral: v})} />
+          </View>
+
+          <Text style={styles.label}>Message</Text>
+          <TextInput style={[styles.input, {height: 100, textAlignVertical:'top'}]} multiline value={f.message} onChangeText={v => setF({...f, message: v})} />
+
+          <TouchableOpacity style={styles.checkRow} onPress={() => setF({...f, accepted: !f.accepted})}>
+             <Ionicons name={f.accepted ? "checkbox" : "square-outline"} size={22} color="#134E4A" />
+             <Text style={styles.checkTxt}>I Accept <Text style={{textDecorationLine:'underline'}}>Terms & Conditions</Text></Text>
+          </TouchableOpacity>
+
+          <View style={styles.btnRow}>
+             <TouchableOpacity style={styles.clearBtn} onPress={clearForm}>
+                <Ionicons name="refresh" size={16} color="#666" />
+                <Text style={styles.clearTxt}>Clear form</Text>
+             </TouchableOpacity>
+
+             <TouchableOpacity style={styles.submitBtn} onPress={submit} disabled={loading}>
+                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.submitTxt}>Submit</Text>}
+             </TouchableOpacity>
           </View>
         </View>
       </KeyboardAwareScrollView>
@@ -386,109 +163,25 @@ export default function CareerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    flexGrow: 1,
-  },
-  formContainer: {
-    paddingHorizontal: width * 0.06,
-    paddingTop: height * 0.02,
-    backgroundColor: 'white',
-  },
-  title: {
-    fontSize: width * 0.065,
-    fontWeight: '700',
-    color: '#1A1A1A',
-    paddingLeft: 3,
-  },
-  spacerGap: {
-    marginVertical: 20
-  },
-  input: {
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingHorizontal: width * 0.035,
-    height: height * 0.055,
-    marginBottom: height * 0.02,
-    fontSize: width * 0.035,
-    fontWeight: '500',
-    borderColor: '#E2E8F0',
-    color: '#1A1A1A',
-    backgroundColor: '#fff',
-  },
-  inputActive: {
-    borderColor: 'hsl(142, 71%, 45%)',
-    backgroundColor: '#F4F7FF',
-  },
-  phoneContainer: {
-    position: 'relative',
-    justifyContent: 'center',
-    marginBottom: height * 0.02,
-    width: '100%',
-  },
-  flagIcon: {
-    width: wp('4.5%'),
-    height: hp('2.5%'),
-    position: 'absolute',
-    left: wp('3%'),
-    zIndex: 2,
-    borderRadius: 0,
-    backgroundColor: 'transparent',
-  },
-  clearIcon: {
-    width: wp('6%'),
-    height: hp('2.5%'),
-    resizeMode: 'contain',
-    marginRight: 4,
-  },
-  phoneInput: {
-    borderWidth: 1.5,
-    borderRadius: 12,
-    borderColor: '#E2E8F0',
-    height: height * 0.055,
-    width: '100%',
-    paddingLeft: wp('10%'),
-    paddingRight: wp('3.5%'),
-    fontSize: width * 0.035,
-    fontWeight: '500',
-    color: '#1A1A1A',
-    backgroundColor: '#fff',
-  },
-  label: {
-    marginBottom: 6,
-    paddingLeft: 4,
-    fontSize: wp('3.6%'),
-    fontWeight: '600',
-    color: '#4A4A4A',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 15,
-  },
-  buttonSubmit: {
-    width: width * 0.4,
-    height: height * 0.058,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 12,
-    marginBottom: 40,
-    backgroundColor: '#000',
-  },
-  buttonClear: {
-    color: '#0a7de1',
-    fontSize: width * 0.038,
-    fontWeight: '500',
-  },
-  buttonClearFlex: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  text: {
-    color: '#fff',
-    fontSize: width * 0.04,
-    fontWeight: '600',
-  },
+  scroll: { padding: 20, paddingBottom: 100 },
+  title: { fontSize: 26, fontWeight: '800', color: '#134E4A', marginBottom: 30 },
+  form: { gap: 15 },
+  label: { fontSize: 15, fontWeight: '700', color: '#374151' },
+  input: { backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10, padding: 15, fontSize: 14 },
+  phoneWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10, paddingHorizontal: 15 },
+  flag: { fontSize: 20, marginRight: 10 },
+  phoneInput: { flex: 1, height: 50 },
+  radioRow: { flexDirection: 'row', gap: 20, marginVertical: 5 },
+  radio: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  radioTxt: { fontSize: 15, fontWeight: '500' },
+  uploadBox: { borderStyle: 'dashed', borderWidth: 2, borderColor: '#3B82F6', borderRadius: 15, height: 120, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0F7FF' },
+  uploadTxt: { color: '#666', marginTop: 8, fontSize: 13 },
+  preview: { width: '100%', height: '100%', borderRadius: 13 },
+  checkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+  checkTxt: { marginLeft: 10, fontSize: 14, color: '#374151' },
+  btnRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30 },
+  clearBtn: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  clearTxt: { color: '#666', fontSize: 14 },
+  submitBtn: { backgroundColor: '#134E4A', paddingHorizontal: 40, paddingVertical: 15, borderRadius: 12 },
+  submitTxt: { color: '#FFF', fontWeight: '800', fontSize: 16 }
 });

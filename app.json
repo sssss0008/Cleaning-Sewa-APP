@@ -2,7 +2,7 @@
   "expo": {
     "name": "CleaningSewa",
     "slug": "cleaningsewa",
-    "version": "4.0.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cleaningsewa",
@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.pracas.cleaningsewa"
     },
     "android": {
-      "versionCode": 4,
+      "versionCode": 10,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#dcdcdc",
@@ -47,9 +47,9 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
     },
-    "owner": "ujjwal321",
+    "owner": "awiskar21",
     "extra": {
       "router": {},
       "eas": {

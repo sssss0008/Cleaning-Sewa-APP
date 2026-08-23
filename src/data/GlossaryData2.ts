@@ -540,7 +540,7 @@ export const GlossaryData2: Partial<Record<AlphabetKey, { title: string; words: 
     { title: 'Zest Scent Fragrance', words: 'Application of citrus-based fragrances post-cleaning for freshness.' },
     { title: 'Zoning Compliance Cleaning', words: 'Facility cleaning meeting specific zoning requirements.' },
     { title: 'Zentrum Facility Cleaning', words: 'Specialized care for central/main facility areas.' },
-    { title: 'Zero Cross-Contamination Protocol', words: 'Advanced procedures preventing contamination spread between areas.' },
+    { title: 'Zero-Cross Contamination Protocol', words: 'Advanced procedures preventing contamination spread between areas.' },
     { title: 'Zephyr Air Purification', words: 'Advanced air circulation and purification systems.' },
     { title: 'Zero-Gravity Surface Cleaning', words: 'Specialized cleaning applicable to aeronautical equipment.' },
     { title: 'Zigzag Pressure Washing Pattern', words: 'Systematic pressure washing using optimized patterns.' },

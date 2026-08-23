@@ -8,45 +8,30 @@ import {
   Image,
 } from 'react-native';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 
 // Import services data
-import { servicesData2, DEFAULT_SERVICE_IMAGE } from '@/src/data/ServiceData';
+import { servicesData2, DEFAULT_SERVICE_IMAGE } from '../../src/data/ServiceData';
 
-type Props = {
-  animationDuration?: number;
-};
-
-export default function ServiceCarousel({ animationDuration = 8000 }: Props) {
-  // FILTER: Removes Carpet Cleaning from appearing in this Top Services carousel
-  const topServices = servicesData2.filter((item) => {
-    const title = (item.name || item.title || '').toLowerCase();
-    return !title.includes('carpet');
-  });
+export default function ServiceCarousel() {
+  const topServices = servicesData2.slice(0, 5);
 
   return (
     <FlatList
-      data={topServices} // Renders all services EXCEPT Carpet Cleaning
+      data={topServices}
       horizontal
       showsHorizontalScrollIndicator={false}
-      keyExtractor={(item, index) => String(item.id || index)}
-      contentContainerStyle={{ paddingRight: wp('4%') }}
+      keyExtractor={(item) => String(item.id)}
+      contentContainerStyle={{ paddingVertical: hp('1%') }}
       renderItem={({ item }) => {
-        const imageSource =
-          typeof item.image === 'string'
-            ? { uri: item.image }
-            : item.image || { uri: DEFAULT_SERVICE_IMAGE };
-
-        const titleText = item.name || item.title || 'Cleaning Service';
-        const subText = item.words || item.description || 'Professional Service in Nepal';
-
         return (
           <TouchableOpacity
             style={styles.card}
-            activeOpacity={0.85}
+            activeOpacity={0.9}
             onPress={() =>
               router.push({
                 pathname: '/service/ServiceDetail',
@@ -54,15 +39,16 @@ export default function ServiceCarousel({ animationDuration = 8000 }: Props) {
               })
             }
           >
-            <Image source={imageSource} style={styles.cardImage} resizeMode="cover" />
-            <View style={styles.textContainer}>
-              <Text style={styles.cardTitle} numberOfLines={1}>
-                {titleText}
+            <Image source={item.image} style={styles.cardImage} resizeMode="cover" />
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.85)']}
+              style={styles.cardGradient}
+            >
+              <Text style={styles.cardCategory}>{item.words}</Text>
+              <Text style={styles.cardTitle} numberOfLines={2}>
+                {item.name}
               </Text>
-              <Text style={styles.cardSub} numberOfLines={1}>
-                {subText}
-              </Text>
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
         );
       }}
@@ -72,32 +58,38 @@ export default function ServiceCarousel({ animationDuration = 8000 }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    width: wp('44%'),
+    width: wp('32%'),
+    height: hp('18%'),
     marginRight: wp('3%'),
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 12,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#1C2B2A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    backgroundColor: '#374151',
+    elevation: 4,
   },
   cardImage: {
     width: '100%',
-    height: hp('11%'),
+    height: '100%',
   },
-  textContainer: {
-    padding: wp('2.5%'),
+  cardGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '75%',
+    justifyContent: 'flex-end',
+    padding: 8,
+  },
+  cardCategory: {
+    fontSize: 8,
+    color: '#34D399',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginBottom: 2,
   },
   cardTitle: {
-    fontSize: wp('3.3%'),
+    fontSize: 11,
     fontWeight: '700',
-    color: '#064E3B',
-  },
-  cardSub: {
-    fontSize: wp('2.7%'),
-    color: '#6B7280',
-    marginTop: 2,
+    color: '#FFFFFF',
+    lineHeight: 13,
   },
 });

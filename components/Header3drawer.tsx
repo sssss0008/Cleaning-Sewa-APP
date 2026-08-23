@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-export default function Header2() {
+export default function Header3() {
   const navigation = useNavigation<any>();
 
   const openWhatsApp = async () => {
