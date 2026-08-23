@@ -74,18 +74,18 @@ const styles = StyleSheet.create({
   calcGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 8
+    justifyContent: 'center',
+    gap: 6
   },
   calcBtn: {
-    width: (width - 60) / 4,
-    height: 45,
-    borderRadius: 8,
+    width: (width - 70) / 7,
+    height: 38,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 1
   },
-  calcTxt: { fontWeight: '800', fontSize: 16 },
+  calcTxt: { fontWeight: '800', fontSize: 13 },
   content: { padding: 20, paddingBottom: 40 },
   sectionHeader: { fontSize: 14, fontWeight: '700', color: '#9CA3AF', marginBottom: 15, textTransform: 'uppercase' },
   card: { padding: 18, borderRadius: 12, marginBottom: 12, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3 },
