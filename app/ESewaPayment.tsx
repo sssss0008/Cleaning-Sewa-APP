@@ -32,10 +32,11 @@ export default function ESewaPaymentScreen() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      if (['9711111111', '9711111112', '9711111113', '9711111114'].includes(phone) && password === 'Nepal@123') {
+      const cleanPhone = phone.replace(/\D/g, '');
+      if (cleanPhone.length === 10 && password.length >= 4) {
         setStep(2);
       } else {
-        Alert.alert('Login Failed', 'Invalid credentials');
+        Alert.alert('Login Failed', 'Please enter a valid 10-digit eSewa ID (phone number) and password (at least 4 characters).');
       }
     }, 1500);
   };

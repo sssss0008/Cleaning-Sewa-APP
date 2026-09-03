@@ -12,12 +12,14 @@ export default function AboutScreen() {
       <Header2 />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.container}>
-          {/* IMAGE ABOVE OUR STORY */}
-          <Image
-            source={require('../../../assets/CleaningSewa-Photos/home-cleaning.jpg')}
-            style={styles.topHeroImg}
-            resizeMode="cover"
-          />
+          {/* LOGO BRANDING SECTION */}
+          <View style={styles.logoHeader}>
+            <Image
+              source={require('../../../assets/images/icon.png')}
+              style={styles.brandingLogo}
+              resizeMode="contain"
+            />
+          </View>
 
           <View style={styles.contentSection}>
             <Text style={[styles.title, { color: isDarkMode ? colors.primary : '#064E3B' }]}>Our Story</Text>
@@ -30,19 +32,28 @@ export default function AboutScreen() {
               From deep home cleaning to carpet and sofa care, AC cleaning, and post-construction cleanup, we ensure every corner of your space is maintained with care and precision.
             </Text>
 
-            {/* Mission Section */}
-            <View style={[styles.missionBox, { backgroundColor: isDarkMode ? colors.card : '#F0FDF4' }]}>
-              <Text style={styles.missionTitle}>Our Mission</Text>
-              <Text style={[styles.missionText, { color: colors.text }]}>
-                To provide top-quality, reliable, and eco-friendly cleaning solutions that make homes and offices cleaner, safer, and healthier for everyone.
-              </Text>
+            {/* Vision & Mission Section */}
+            <View style={styles.visionMissionRow}>
+              <View style={[styles.visionBox, { backgroundColor: isDarkMode ? colors.card : '#F0F9FF' }]}>
+                <Text style={styles.visionTitle}>Our Vision</Text>
+                <Text style={[styles.visionText, { color: colors.text }]}>
+                  To be Nepal's leader in eco-friendly cleaning, setting the gold standard for hygiene and customer trust.
+                </Text>
+              </View>
+              <View style={[styles.visionBox, { backgroundColor: isDarkMode ? colors.card : '#F0FDF4' }]}>
+                <Text style={styles.visionTitle}>Our Mission</Text>
+                <Text style={[styles.visionText, { color: colors.text }]}>
+                  To provide top-quality, reliable, and eco-friendly cleaning solutions for a healthier environment.
+                </Text>
+              </View>
             </View>
 
-            {/* Features Bar */}
-            <View style={styles.featuresBar}>
-              <Text style={[styles.featureTxt, { color: colors.subText }]}>✔ Professional Staff</Text>
-              <Text style={[styles.featureTxt, { color: colors.subText }]}>✔ Eco Products</Text>
-              <Text style={[styles.featureTxt, { color: colors.subText }]}>✔ 100% Satisfaction</Text>
+            {/* History Section */}
+            <View style={styles.historySection}>
+              <Text style={[styles.sectionTitle, { color: isDarkMode ? colors.primary : '#064E3B', textAlign: 'left' }]}>Our Journey</Text>
+              <Text style={[styles.description, { color: colors.text }]}>
+                Established in 2018, Cleaning Sewa started with a small team in Kathmandu with a big dream: to professionalize the cleaning industry in Nepal. Over the years, we have served thousands of happy customers and expanded our services across major cities.
+              </Text>
             </View>
 
             {/* Message from Director */}
@@ -74,15 +85,28 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   scrollContent: { paddingBottom: 40 },
   container: { padding: 0 },
-  topHeroImg: { width: '100%', height: 200, marginBottom: 20 },
+  logoHeader: {
+    width: '100%',
+    height: 180,
+    backgroundColor: '#F0FDF4', // Light green background
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#DCFCE7',
+  },
+  brandingLogo: {
+    width: '60%',
+    height: '70%',
+  },
   contentSection: { paddingHorizontal: 20 },
   title: { fontSize: 26, fontWeight: '800', marginBottom: 15 },
   description: { fontSize: 15, lineHeight: 24, textAlign: 'justify' },
-  missionBox: { marginTop: 30, padding: 20, borderRadius: 16, borderLeftWidth: 5, borderLeftColor: '#16A34A' },
-  missionTitle: { fontSize: 18, fontWeight: '800', color: '#16A34A', marginBottom: 8 },
-  missionText: { fontSize: 15, lineHeight: 22 },
-  featuresBar: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 25, flexWrap: 'wrap' },
-  featureTxt: { fontSize: 11, fontWeight: '700' },
+  visionMissionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 30, gap: 10 },
+  visionBox: { flex: 1, padding: 15, borderRadius: 16, borderTopWidth: 4, borderTopColor: '#0A7CFF' },
+  visionTitle: { fontSize: 16, fontWeight: '800', color: '#0A7CFF', marginBottom: 6 },
+  visionText: { fontSize: 13, lineHeight: 20 },
+  historySection: { marginTop: 40, backgroundColor: '#F8FAFC', padding: 20, borderRadius: 16 },
   directorSection: { marginTop: 40 },
   sectionTitle: { fontSize: 20, fontWeight: '800', textAlign: 'center', marginBottom: 20 },
   directorCard: { alignItems: 'center' },

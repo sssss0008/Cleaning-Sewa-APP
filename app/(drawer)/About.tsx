@@ -9,7 +9,7 @@ const teamMembers = [
     id: 1,
     name: 'Ramesh Koirala',
     role: 'Director',
-    image: require('../../assets/aboutus/director.png'),
+    image: require('../../assets/aboutUs/director.png'),
   },
 ];
 

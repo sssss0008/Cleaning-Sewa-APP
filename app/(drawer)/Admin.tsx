@@ -45,7 +45,7 @@ export default function AdminScreen() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [activeTab, setActiveTab] = useState<'bookings' | 'pros'>('bookings');
 
-  const [editModal, setEditModal] = useState({ visible: false, data: null as any, type: '' as 'booking' | 'pro' });
+  const [editModal, setEditModal] = useState<{ visible: boolean; data: any; type: 'booking' | 'pro' | '' }>({ visible: false, data: null, type: '' });
 
   const pinRefs = [useRef<TextInput>(null), useRef<TextInput>(null), useRef<TextInput>(null), useRef<TextInput>(null)];
 

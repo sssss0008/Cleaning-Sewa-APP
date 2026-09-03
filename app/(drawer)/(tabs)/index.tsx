@@ -18,6 +18,7 @@ import {
 } from 'react-native-responsive-screen';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 
 // ── FIXED IMPORTS ───────────────────────────────────────────────
 import Header2 from '../../../components/Header2';
@@ -172,7 +173,7 @@ export default function HomeScreen() {
             style={styles.heroOverlay}
           >
             <Text style={styles.heroTitle}>
-              Professional {'\n'} Cleaning Service
+              Professional Cleaning {'\n'}Service in Kathmandu Nepal
             </Text>
 
             <View style={styles.heroNumberBar}>

@@ -18,6 +18,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# IDE Artifacts
+.artifacts/
+
 # OS files
 .DS_Store
 Thumbs.db
