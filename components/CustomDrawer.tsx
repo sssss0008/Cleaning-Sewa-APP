@@ -55,41 +55,41 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
           </TouchableOpacity>
         </View>
 
-        {/* NON-SCROLLING MENU (Reduced padding and gap) */}
-        <View style={styles.menu}>
+        {/* SCROLLABLE MENU FOR MOBILE DEVICES */}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollMenu}>
           <MenuItem
             label="Home"
             icon="home-outline"
-            active={pathname === '/' || pathname === '/(drawer)/(tabs)'}
-            onPress={() => navigateTo('/')}
+            active={pathname === '/' || pathname === '/(drawer)/(tabs)' || pathname.includes('/(tabs)/index') || pathname === '/(drawer)/(tabs)/index'}
+            onPress={() => navigateTo('/(drawer)/(tabs)')}
           />
           <MenuItem
             label="Services"
             icon="construct-outline"
-            active={pathname === '/Service'}
-            onPress={() => navigateTo('/Service')}
+            active={pathname.includes('/Service')}
+            onPress={() => navigateTo('/(drawer)/(tabs)/Service')}
           />
 
           {/* CONTACT PLACED BELOW SERVICE AS REQUESTED */}
           <MenuItem
             label="Contact & Support"
             icon="call-outline"
-            active={pathname === '/Contact'}
-            onPress={() => navigateTo('/Contact')}
+            active={pathname.includes('/Contact')}
+            onPress={() => navigateTo('/(drawer)/(tabs)/Contact')}
           />
 
           <MenuItem
             label="About Us"
             icon="information-circle-outline"
-            active={pathname === '/About'}
-            onPress={() => navigateTo('/About')}
+            active={pathname.includes('/About')}
+            onPress={() => navigateTo('/(drawer)/(tabs)/About')}
           />
 
           {hasBooking && (
             <MenuItem
               label="My Bookings"
               icon="calendar-outline"
-              active={pathname === '/UserDashboard'}
+              active={pathname.includes('/UserDashboard')}
               onPress={() => navigateTo('/UserDashboard')}
             />
           )}
@@ -98,7 +98,7 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
             <MenuItem
               label="Pro Dashboard"
               icon="briefcase-outline"
-              active={pathname === '/ProDashboard'}
+              active={pathname.includes('/ProDashboard')}
               onPress={() => navigateTo('/ProDashboard')}
             />
           )}
@@ -106,41 +106,41 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
           <MenuItem
             label="Become a Partner"
             icon="people-outline"
-            active={pathname === '/Partnership'}
+            active={pathname.includes('/Partnership')}
             onPress={() => navigateTo('/Partnership')}
           />
           <MenuItem
             label="Join as Professional"
             icon="ribbon-outline"
-            active={pathname === '/Career'}
+            active={pathname.includes('/Career')}
             onPress={() => navigateTo('/Career')}
           />
 
           <MenuItem
             label="FAQs"
             icon="help-circle-outline"
-            active={pathname === '/FAQs'}
+            active={pathname.includes('/FAQs')}
             onPress={() => navigateTo('/FAQs')}
           />
 
           <MenuItem
             label="Refund Policy"
             icon="refresh-outline"
-            active={pathname === '/RefundPolicy'}
+            active={pathname.includes('/RefundPolicy')}
             onPress={() => navigateTo('/RefundPolicy')}
           />
 
           <MenuItem
             label="Privacy Policy"
             icon="shield-checkmark-outline"
-            active={pathname === '/PrivacyPolicy'}
+            active={pathname.includes('/PrivacyPolicy')}
             onPress={() => navigateTo('/PrivacyPolicy')}
           />
 
           <MenuItem
             label="Glossary"
             icon="book-outline"
-            active={pathname === '/Glossary'}
+            active={pathname.includes('/Glossary')}
             onPress={() => navigateTo('/Glossary')}
           />
 
@@ -152,7 +152,7 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
             <Ionicons name="lock-closed-outline" size={16} color="#FFF" />
             <Text style={styles.adminTxt}>Admin Login</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -160,8 +160,8 @@ export default function CustomDrawer(_props: DrawerContentComponentProps) {
 
 const MenuItem = ({ label, icon, active, onPress }: any) => {
   const { isDarkMode } = useTheme();
-  const activeBg = isDarkMode ? 'rgba(16, 185, 129, 0.1)' : '#F0FDF4';
-  const activeColor = '#065F46';
+  const activeBg = isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#F0FDF4';
+  const activeColor = isDarkMode ? '#34D399' : '#065F46';
 
   return (
     <TouchableOpacity
@@ -169,7 +169,7 @@ const MenuItem = ({ label, icon, active, onPress }: any) => {
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Ionicons name={icon} size={18} color={active ? activeColor : '#6B7280'} />
+      <Ionicons name={icon} size={18} color={active ? activeColor : (isDarkMode ? '#9CA3AF' : '#6B7280')} />
       <Text style={[styles.label, { color: active ? activeColor : (isDarkMode ? '#F9FAFB' : '#374151'), fontWeight: active ? '700' : '500' }]}>
         {label}
       </Text>
@@ -187,9 +187,9 @@ const styles = StyleSheet.create({
   name: { color: '#FFF', fontWeight: 'bold', fontSize: 15 },
   guest: { color: 'rgba(255, 255, 255, 0.7)', fontSize: 10 },
   themeBtn: { padding: 6, borderRadius: 15, backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-  menu: { padding: 10, flex: 1, justifyContent: 'space-between' }, // Space between items to fill screen without scroll
-  item: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, marginBottom: 2 },
+  scrollMenu: { padding: 10, paddingBottom: 25 },
+  item: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, marginBottom: 4 },
   label: { marginLeft: 12, fontSize: 13 },
-  adminBtn: { backgroundColor: '#064E3B', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 10, marginTop: 10 },
+  adminBtn: { backgroundColor: '#064E3B', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 10, marginTop: 12 },
   adminTxt: { color: '#FFF', fontWeight: '700', marginLeft: 6, fontSize: 13 },
 });

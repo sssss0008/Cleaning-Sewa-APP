@@ -8,7 +8,7 @@ import {
   FlatList,
   StatusBar
 } from 'react-native';
-import Header3 from '../../components/Header3drawer';
+import Header2 from '../../components/Header2';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -49,7 +49,7 @@ export default function NotificationScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
-      <Header3 />
+      <Header2 title="Notifications" showBack={true} />
 
       <View style={styles.headerBox}>
          <Text style={[styles.title, { color: isDarkMode ? colors.primary : '#064E3B' }]}>Notification Center</Text>

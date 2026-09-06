@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, LayoutAnimation, Platform, UIManager } from 'react-native';
-import Header3 from '../../components/Header3drawer';
+import Header2 from '../../components/Header2';
 import { useTheme } from '../../src/context/ThemeContext';
 import { FaqsData } from '../../src/data/FaqsData';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,7 +46,7 @@ export default function FAQsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Header3 />
+      <Header2 title="Service FAQs" showBack={true} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
         <Text style={[styles.title, { color: '#064E3B' }]}>Service FAQs</Text>
         <Text style={[styles.sub, { color: colors.subText }]}>Commonly asked questions about our standards</Text>

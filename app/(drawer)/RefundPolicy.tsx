@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import Header3 from '../../components/Header3drawer';
+import Header2 from '../../components/Header2';
 import { useTheme } from '../../src/context/ThemeContext';
 
 export default function RefundPolicyScreen() {
@@ -8,7 +8,7 @@ export default function RefundPolicyScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Header3 />
+      <Header2 title="Refund Policy" showBack={true} />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={[styles.title, { color: '#064E3B' }]}>Refund Policy</Text>
         <Text style={[styles.date, { color: colors.subText }]}>Effective: June 14, 2026</Text>

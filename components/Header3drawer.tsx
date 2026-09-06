@@ -63,9 +63,18 @@ export default function Header3() {
 
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() =>
-                navigation.dispatch(DrawerActions.openDrawer())
-              }
+              onPress={() => {
+                try {
+                  const parent = navigation.getParent();
+                  if (parent) {
+                    parent.dispatch(DrawerActions.openDrawer());
+                  } else {
+                    navigation.dispatch(DrawerActions.openDrawer());
+                  }
+                } catch {
+                  navigation.dispatch(DrawerActions.openDrawer());
+                }
+              }}
               activeOpacity={0.8}
             >
               <View>

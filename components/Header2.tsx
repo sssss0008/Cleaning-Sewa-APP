@@ -26,9 +26,18 @@ export default function Header2({ title, showBack = false }: HeaderProps) {
 
   const handleOpenDrawer = () => {
     try {
-      navigation.dispatch(DrawerActions.openDrawer());
+      const parent = navigation.getParent();
+      if (parent) {
+        parent.dispatch(DrawerActions.openDrawer());
+      } else {
+        navigation.dispatch(DrawerActions.openDrawer());
+      }
     } catch {
-      router.replace('/(drawer)/(tabs)');
+      try {
+        navigation.dispatch(DrawerActions.openDrawer());
+      } catch {
+        router.replace('/(drawer)/(tabs)');
+      }
     }
   };
 
@@ -78,15 +87,13 @@ export default function Header2({ title, showBack = false }: HeaderProps) {
           <Ionicons name="logo-whatsapp" size={24} color="#FFFFFF" />
         </TouchableOpacity>
 
-        {!showBack && (
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={handleOpenDrawer}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="menu-outline" size={32} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={handleOpenDrawer}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="menu-outline" size={30} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
     </View>
   );

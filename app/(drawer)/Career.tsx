@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Image
 } from 'react-native';
-import Header3 from '../../components/Header3drawer'; // FIXED PATH
+import Header2 from '../../components/Header2';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
@@ -73,7 +73,7 @@ export default function CareerScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
-      <Header3 />
+      <Header2 title="Join as Professional" showBack={true} />
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>Join Now</Text>
 

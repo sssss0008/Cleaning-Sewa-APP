@@ -9,7 +9,7 @@ import {
   Image,
   ActivityIndicator
 } from 'react-native';
-import Header3 from '../../components/Header3drawer';
+import Header2 from '../../components/Header2';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -63,7 +63,7 @@ export default function PartnershipScreen() {
 
   return (
     <View style={styles.screen}>
-      <Header3 />
+      <Header2 title="Become a Partner" showBack={true} />
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>Become a Partner</Text>
         <Text style={styles.subTitle}>Partnership opportunity with HomeSewa</Text>
