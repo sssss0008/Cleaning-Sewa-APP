@@ -4,7 +4,10 @@
 
 ## 1. Overview
 
-The cloud backend supporting the Cleaning Sewa mobile platform relies on a Node.js server environment for business logic and API management, interacting with the Supabase database platform. 
+The cloud backend supporting the Cleaning Sewa mobile platform relies on Supabase database services hosted at project instance `idzvconrzundcqkiibmh`:
+* **Supabase Project ID**: `idzvconrzundcqkiibmh`
+* **Supabase API Base URL**: `https://idzvconrzundcqkiibmh.supabase.co`
+* **Supabase Dashboard**: [https://supabase.com/dashboard/project/idzvconrzundcqkiibmh](https://supabase.com/dashboard/project/idzvconrzundcqkiibmh)
 
 Client interactions are handled via RESTful PostgREST APIs and real-time WebSocket subscriptions, secured using Row Level Security (RLS) policies and JWT authentication tokens. This architecture ensures high-throughput database interactions, fine-grained access control, and live state synchronization across customer and professional mobile applications.
 
