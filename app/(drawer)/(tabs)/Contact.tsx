@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Linking, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, StatusBar } from 'react-native';
 import Header2 from '../../../components/Header2';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../src/context/ThemeContext';
+import { feedbackService } from '../../../src/services/feedbackService';
 
 const CONTACT_INFO = {
   phone: '+9779851152774',
@@ -27,14 +28,18 @@ export default function ContactScreen() {
     Linking.openURL(url).catch(() => Alert.alert('Error', 'Unable to open application.'));
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!msg.trim()) return Alert.alert('Error', 'Please enter feedback');
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await feedbackService.sendFeedback(msg, CONTACT_INFO.email);
       setLoading(false);
-      Alert.alert('Success', 'Feedback sent successfully!');
+      Alert.alert('Success', 'Feedback submitted to database successfully!');
       setMsg('');
-    }, 1500);
+    } catch (e) {
+      setLoading(false);
+      Alert.alert('Error', 'Failed to send feedback.');
+    }
   };
 
   return (

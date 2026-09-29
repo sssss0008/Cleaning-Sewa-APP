@@ -22,6 +22,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../src/context/ThemeContext';
 import Header2 from '../../components/Header2';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { adminService } from '../../src/services/adminService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -55,26 +56,25 @@ export default function AdminScreen() {
 
   const loadAllData = async () => {
     try {
-      const bData = await AsyncStorage.getItem('user_bookings');
-      const pData = await AsyncStorage.getItem('pro_applications');
+      const { data: bData } = await adminService.getAllBookings();
+      const { data: pData } = await adminService.getAllCareers();
 
       if (bData) {
-        const parsed = JSON.parse(bData);
-        setBookings(parsed);
-        const revenue = parsed.reduce((acc: number, curr: any) => acc + parseInt(curr.price || 0), 0);
+        setBookings(bData);
+        const revenue = bData.reduce((acc: number, curr: any) => acc + parseInt(curr.price || curr.budget || 0), 0);
         setTotalRevenue(revenue);
       }
-      if (pData) setProfessionals(JSON.parse(pData));
+      if (pData) setProfessionals(pData);
     } catch (e) { console.error(e); }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const enteredPin = auth.pin.join('');
-    const rawPhone = auth.phone.replace(/\s/g, '');
-    if (rawPhone === '9852024365' && enteredPin === '1234') {
+    const res = await adminService.verifyAdmin(auth.phone, enteredPin);
+    if (res.success) {
       setAuth({ ...auth, logged: true });
     } else {
-      Alert.alert('Access Denied', 'Invalid Phone or PIN');
+      Alert.alert('Access Denied', res.error || 'Invalid Phone or PIN');
     }
   };
 

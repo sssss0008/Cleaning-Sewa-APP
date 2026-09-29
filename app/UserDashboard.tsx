@@ -1,40 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Modal, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Modal, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header2 from '../components/Header2';
 import { useTheme } from '../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { bookingService } from '../src/services/bookingService';
 
-// DEMO NAMES FOR SIMILAR SERVICES
 const SIMILAR_PROS = [
   { id: '1', name: 'Nabin Sharma', rating: '4.9', jobs: '124', area: 'Kathmandu' },
   { id: '2', name: 'Suman Thapa', rating: '4.8', jobs: '86', area: 'Lalitpur' },
   { id: '3', name: 'Arjun Giri', rating: '4.7', jobs: '92', area: 'Bhaktapur' },
   { id: '4', name: 'Bishal Rai', rating: '4.9', jobs: '156', area: 'Kathmandu' },
   { id: '5', name: 'Pradip Kc', rating: '4.8', jobs: '112', area: 'Lalitpur' },
-  { id: '6', name: 'Dipendra Shah', rating: '4.6', jobs: '78', area: 'Chitwan' },
-  { id: '7', name: 'Manoj Pandey', rating: '4.9', jobs: '203', area: 'Kathmandu' },
-  { id: '8', name: 'Rabin Shrestha', rating: '4.7', jobs: '65', area: 'Bhaktapur' },
-  { id: '9', name: 'Sagar Magar', rating: '4.8', jobs: '89', area: 'Kathmandu' },
-  { id: '10', name: 'Bikash Tamang', rating: '4.5', jobs: '45', area: 'Lalitpur' },
-  { id: '11', name: 'Anil Gurung', rating: '4.9', jobs: '134', area: 'Kathmandu' },
-  { id: '12', name: 'Sujan Baral', rating: '4.7', jobs: '56', area: 'Pokhara' },
-  { id: '13', name: 'Roshan Adhikari', rating: '4.8', jobs: '97', area: 'Kathmandu' },
-  { id: '14', name: 'Sandip Chhetri', rating: '4.6', jobs: '82', area: 'Lalitpur' },
-  { id: '15', name: 'Kiran Bohara', rating: '4.9', jobs: '176', area: 'Kathmandu' },
-  { id: '16', name: 'Prakash Rana', rating: '4.7', jobs: '68', area: 'Bhaktapur' },
-  { id: '17', name: 'Suraj Khatri', rating: '4.8', jobs: '115', area: 'Kathmandu' },
-  { id: '18', name: 'Ishwor Dahal', rating: '4.5', jobs: '39', area: 'Lalitpur' },
-  { id: '19', name: 'Dinesh Pariyar', rating: '4.9', jobs: '142', area: 'Kathmandu' },
-  { id: '20', name: 'Ram Bahadur', rating: '4.7', jobs: '73', area: 'Bhaktapur' },
 ];
 
 export default function UserDashboard() {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const [bookings, setBookings] = useState<any[]>([]);
   const [totalSpent, setTotalSpent] = useState(0);
-  const [profile, setProfile] = useState({ name: 'Guest User', phone: '98XXXXXXXX', photo: null as string | null });
+  const [profile, setProfile] = useState({ name: 'Guest User', phone: '98XXXXXXXX', email: 'cleaningsewa@sriyog.com', photo: null as string | null });
   const [editModal, setEditModal] = useState(false);
 
   useEffect(() => {
@@ -43,16 +28,14 @@ export default function UserDashboard() {
 
   const loadData = async () => {
     try {
-      const bData = await AsyncStorage.getItem('user_bookings');
+      const fetchedBookings = await bookingService.getUserBookings();
+      setBookings(fetchedBookings || []);
+      const spent = (fetchedBookings || []).reduce((acc: number, curr: any) => acc + (parseInt(curr.price) || 0), 0);
+      setTotalSpent(spent);
+
       const pData = await AsyncStorage.getItem('user_profile');
-      if (bData) {
-        const parsed = JSON.parse(bData);
-        setBookings(parsed);
-        const spent = parsed.reduce((acc: number, curr: any) => acc + parseInt(curr.price), 0);
-        setTotalSpent(spent);
-      }
       if (pData) setProfile(JSON.parse(pData));
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error('Dashboard Load Error:', e); }
   };
 
   const pickImage = async () => {
@@ -63,8 +46,9 @@ export default function UserDashboard() {
       quality: 0.8,
     });
     if (!result.canceled) {
-      setProfile({...profile, photo: result.assets[0].uri});
-      await AsyncStorage.setItem('user_profile', JSON.stringify({...profile, photo: result.assets[0].uri}));
+      const updated = { ...profile, photo: result.assets[0].uri };
+      setProfile(updated);
+      await AsyncStorage.setItem('user_profile', JSON.stringify(updated));
     }
   };
 
@@ -94,6 +78,7 @@ export default function UserDashboard() {
              <View style={{ flex: 1, marginLeft: 15 }}>
                 <Text style={[styles.pName, { color: colors.text }]}>{profile.name}</Text>
                 <Text style={styles.pSub}>{profile.phone}</Text>
+                <Text style={styles.pEmail}>{profile.email || 'cleaningsewa@sriyog.com'}</Text>
              </View>
              <TouchableOpacity onPress={() => setEditModal(true)} style={styles.editIcon}>
                 <Ionicons name="create-outline" size={24} color="#064E3B" />
@@ -134,13 +119,13 @@ export default function UserDashboard() {
             <View key={item.id} style={[styles.card, { backgroundColor: colors.card }]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.service, { color: colors.text }]}>{item.service}</Text>
-                <View style={styles.badge}><Text style={styles.badgeTxt}>{item.status}</Text></View>
+                <View style={styles.badge}><Text style={styles.badgeTxt}>{item.status || 'Pending'}</Text></View>
               </View>
-              <Text style={styles.detail}>Date: {item.date} | NPR {item.price}</Text>
+              <Text style={styles.detail}>Date: {item.date} | NPR {item.price || item.budget}</Text>
             </View>
           ))
         ) : (
-          <Text style={styles.empty}>No bookings yet.</Text>
+          <Text style={styles.empty}>No bookings recorded yet.</Text>
         )}
       </ScrollView>
 
@@ -150,6 +135,7 @@ export default function UserDashboard() {
                <Text style={styles.mTitle}>Update Profile</Text>
                <TextInput style={styles.input} placeholder="Full Name" value={profile.name} onChangeText={v => setProfile({...profile, name: v})} />
                <TextInput style={styles.input} placeholder="Phone Number" value={profile.phone} onChangeText={v => setProfile({...profile, phone: v})} keyboardType="phone-pad" />
+               <TextInput style={styles.input} placeholder="Email Address" value={profile.email} onChangeText={v => setProfile({...profile, email: v})} keyboardType="email-address" />
                <View style={styles.mBtnRow}>
                   <TouchableOpacity style={styles.cancel} onPress={() => setEditModal(false)}><Text style={{ fontWeight: '700' }}>CANCEL</Text></TouchableOpacity>
                   <TouchableOpacity style={styles.save} onPress={handleUpdateProfile}><Text style={{ color: '#FFF', fontWeight: 'bold' }}>SAVE</Text></TouchableOpacity>
@@ -170,8 +156,9 @@ const styles = StyleSheet.create({
   camIcon: { position: 'absolute', bottom: 2, right: 2, backgroundColor: '#064E3B', width: 24, height: 24, borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF' },
   pName: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
   pSub: { fontSize: 14, color: '#6B7280', marginTop: 2 },
+  pEmail: { fontSize: 12, color: '#064E3B', fontWeight: '600', marginTop: 2 },
   editIcon: { padding: 8, backgroundColor: '#F0FDF4', borderRadius: 12 },
-  trackerBox: { flexDirection: 'row', marginTop: 24, borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 20, justifyContent: 'space-around' },
+  trackerBox: { flexDirection: 'row', marginTop: 24, borderTopWidth: 1, borderTopColor: '#F3F3F3', paddingTop: 20, justifyContent: 'space-around' },
   trackItem: { alignItems: 'center' },
   trackLabel: { fontSize: 10, fontWeight: '800', color: '#9CA3AF', marginBottom: 6, letterSpacing: 1 },
   trackVal: { fontSize: 18, fontWeight: '900' },

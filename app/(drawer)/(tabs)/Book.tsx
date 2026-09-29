@@ -6,6 +6,7 @@ import Header2 from '../../../components/Header2';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { bookingService } from '../../../src/services/bookingService';
 
 const cleaningServices = ['Bathroom Cleaning', 'Kitchen Cleaning', 'Home Cleaning', 'Carpet Cleaning', 'Sofa Cleaning', 'Move-In/Out Cleaning', 'Disinfection', 'A/C Cleaning'];
 const cities = ['Kathmandu', 'Lalitpur', 'Bhaktapur', 'Pokhara', 'Biratnagar', 'Chitwan'];
@@ -15,7 +16,7 @@ export default function ServiceBookingScreen() {
   const params = useLocalSearchParams<{ service: string }>();
   const [f, setF] = useState({
     name: '',
-    email: '',
+    email: 'cleaningsewa@sriyog.com',
     phone: '',
     city: '',
     landmark: '',
@@ -44,25 +45,49 @@ export default function ServiceBookingScreen() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!f.name || !f.phone || !f.city || !f.budget || !f.service || !f.date || !f.lead || !f.terms) {
       return Alert.alert('Required Fields', 'Please fill all mandatory fields and agree to T&C.');
     }
 
-    Alert.alert(
-      'Payment Required',
-      'To confirm your booking, please proceed to payment via eSewa.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Pay with eSewa',
-          onPress: () => router.push({
-            pathname: '/ESewaPayment',
-            params: { price: f.budget.replace(/\D/g, '') || '2500', service: f.service }
-          })
-        }
-      ]
-    );
+    setIsSubmitting(true);
+    try {
+      const result = await bookingService.createBooking({
+        name: f.name,
+        phone: f.phone,
+        city: f.city,
+        budget: f.budget,
+        service: f.service,
+        date: f.date.toDateString(),
+        lead: f.lead,
+        imageUri: imageUri,
+        status: 'Pending',
+      });
+
+      setIsSubmitting(false);
+
+      Alert.alert(
+        'Booking Created',
+        'Your booking request has been submitted to the database. Proceed to payment via eSewa to confirm.',
+        [
+          { text: 'Later', style: 'cancel', onPress: () => router.push('/UserDashboard') },
+          {
+            text: 'Pay with eSewa',
+            onPress: () => router.push({
+              pathname: '/ESewaPayment',
+              params: {
+                bookingId: result.booking.id,
+                price: f.budget.replace(/\D/g, '') || '2500',
+                service: f.service
+              }
+            })
+          }
+        ]
+      );
+    } catch (e) {
+      setIsSubmitting(false);
+      Alert.alert('Error', 'Failed to save booking. Please try again.');
+    }
   };
 
   const openP = (t: string, i: string[], target: string) => setP({ v: true, t, i, target });

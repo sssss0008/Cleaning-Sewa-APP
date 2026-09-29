@@ -11,10 +11,10 @@ import {
 } from 'react-native';
 import Header2 from '../../components/Header2';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { careerService } from '../../src/services/careerService';
 
 export default function CareerScreen() {
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function CareerScreen() {
   const [f, setF] = useState({
     name: '',
     phone: '',
-    email: '',
+    email: 'cleaningsewa@sriyog.com',
     expertise: '',
     experience: '5',
     city: '',
@@ -45,7 +45,7 @@ export default function CareerScreen() {
   };
 
   const clearForm = () => {
-    setF({ name: '', phone: '', email: '', expertise: '', experience: '5', city: '', area: '', emergency: '', referral: '', message: '', accepted: false });
+    setF({ name: '', phone: '', email: 'cleaningsewa@sriyog.com', expertise: '', experience: '5', city: '', area: '', emergency: '', referral: '', message: '', accepted: false });
     setImage(null);
     setGender('Male');
   };
@@ -56,19 +56,31 @@ export default function CareerScreen() {
     }
     setLoading(true);
     try {
-      const existing = await AsyncStorage.getItem('pro_applications');
-      const apps = existing ? JSON.parse(existing) : [];
-      const newApp = { id: Date.now().toString(), ...f, gender, image, date: new Date().toLocaleDateString() };
-      await AsyncStorage.setItem('pro_applications', JSON.stringify([newApp, ...apps]));
+      await careerService.submitApplication({
+        name: f.name,
+        phone: f.phone,
+        email: f.email || 'cleaningsewa@sriyog.com',
+        gender,
+        expertise: f.expertise,
+        experience: f.experience,
+        city: f.city,
+        area: f.area,
+        emergency: f.emergency,
+        referral: f.referral,
+        message: f.message,
+        image,
+      });
 
-      setTimeout(() => {
-        setLoading(false);
-        Alert.alert('Success', 'Your professional profile has been submitted!', [
-          { text: 'View Dashboard', onPress: () => router.push('/ProDashboard') }
-        ]);
-        clearForm();
-      }, 1500);
-    } catch (e) { console.error(e); }
+      setLoading(false);
+      Alert.alert('Success', 'Your professional application has been saved to the database!', [
+        { text: 'View Dashboard', onPress: () => router.push('/ProDashboard') }
+      ]);
+      clearForm();
+    } catch (e) {
+      setLoading(false);
+      console.error('Pro App Submit Error:', e);
+      Alert.alert('Error', 'Submission failed. Please try again.');
+    }
   };
 
   return (
@@ -112,7 +124,7 @@ export default function CareerScreen() {
           </TouchableOpacity>
 
           <Text style={styles.label}>Email</Text>
-          <TextInput style={styles.input} placeholder="Enter your email address" value={f.email} onChangeText={v => setF({...f, email: v})} />
+          <TextInput style={styles.input} placeholder="cleaningsewa@sriyog.com" value={f.email} onChangeText={v => setF({...f, email: v})} />
 
           <Text style={styles.label}>Your Expertise <Text style={{color:'red'}}>*</Text></Text>
           <TextInput style={styles.input} placeholder="Select maximum UpTo 5" value={f.expertise} onChangeText={v => setF({...f, expertise: v})} />

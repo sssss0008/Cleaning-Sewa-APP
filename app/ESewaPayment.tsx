@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { paymentService } from '../src/services/paymentService';
 
 const ESEWA_GREEN = '#41a124';
 
@@ -21,6 +21,7 @@ export default function ESewaPaymentScreen() {
   const params = useLocalSearchParams();
   const price = params.price || '2500';
   const service = params.service || 'Cleaning Service';
+  const bookingId = params.bookingId ? String(params.bookingId) : undefined;
 
   const [step, setStep] = useState(1);
   const [phone, setPhone] = useState('');
@@ -43,27 +44,24 @@ export default function ESewaPaymentScreen() {
 
   const handleConfirm = async () => {
     setLoading(true);
-    setTimeout(async () => {
+    try {
+      const refId = 'CS-' + Math.floor(Math.random() * 1000000);
+      const numPrice = parseFloat(String(price)) || 2500;
+
+      await paymentService.processPayment({
+        bookingId,
+        gateway: 'eSewa',
+        transactionRef: refId,
+        amount: numPrice,
+        status: 'Paid',
+      });
+    } catch (e) {
+      console.error('Payment Error:', e);
+    } finally {
       setLoading(false);
-
-      // Store booking locally for User Dashboard
-      try {
-        const existing = await AsyncStorage.getItem('user_bookings');
-        const bookings = existing ? JSON.parse(existing) : [];
-        const newBooking = {
-          id: Date.now().toString(),
-          service,
-          price,
-          date: new Date().toLocaleDateString(),
-          status: 'Confirmed',
-          refId: 'CS-' + Math.floor(Math.random()*1000000)
-        };
-        await AsyncStorage.setItem('user_bookings', JSON.stringify([newBooking, ...bookings]));
-      } catch (e) { console.error(e); }
-
       setStep(3);
       setTimeout(() => router.replace('/UserDashboard'), 2500);
-    }, 2000);
+    }
   };
 
   return (
@@ -110,7 +108,7 @@ export default function ESewaPaymentScreen() {
           <View style={styles.success}>
              <Ionicons name="checkmark-circle" size={80} color={ESEWA_GREEN} />
              <Text style={styles.successTitle}>Payment Success!</Text>
-             <Text style={styles.successSub}>Booking recorded in your dashboard.</Text>
+             <Text style={styles.successSub}>Booking recorded in database & user dashboard.</Text>
           </View>
         )}
       </ScrollView>

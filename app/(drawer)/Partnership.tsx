@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import Header2 from '../../components/Header2';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import { partnershipService } from '../../src/services/partnershipService';
 
 export default function PartnershipScreen() {
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export default function PartnershipScreen() {
     fullName: '',
     orgName: '',
     phone: '',
-    email: '',
+    email: 'cleaningsewa@sriyog.com',
     area: '',
     accepted: false
   });
@@ -38,7 +38,7 @@ export default function PartnershipScreen() {
   };
 
   const clearForm = () => {
-    setF({ fullName: '', orgName: '', phone: '', email: '', area: '', accepted: false });
+    setF({ fullName: '', orgName: '', phone: '', email: 'cleaningsewa@sriyog.com', area: '', accepted: false });
     setImage(null);
   };
 
@@ -48,17 +48,23 @@ export default function PartnershipScreen() {
     }
     setLoading(true);
     try {
-      const existing = await AsyncStorage.getItem('partnership_requests');
-      const requests = existing ? JSON.parse(existing) : [];
-      const newRequest = { id: Date.now().toString(), ...f, image, date: new Date().toLocaleDateString() };
-      await AsyncStorage.setItem('partnership_requests', JSON.stringify([newRequest, ...requests]));
+      await partnershipService.submitPartnershipRequest({
+        fullName: f.fullName,
+        orgName: f.orgName,
+        phone: f.phone,
+        email: f.email || 'cleaningsewa@sriyog.com',
+        area: f.area,
+        image,
+      });
 
-      setTimeout(() => {
-        setLoading(false);
-        Alert.alert('Success', 'Your partnership request has been submitted locally!');
-        clearForm();
-      }, 1500);
-    } catch (e) { console.error(e); }
+      setLoading(false);
+      Alert.alert('Success', 'Your partnership request has been submitted to the database!');
+      clearForm();
+    } catch (e) {
+      setLoading(false);
+      console.error('Partnership Error:', e);
+      Alert.alert('Error', 'Failed to submit request.');
+    }
   };
 
   return (
@@ -66,7 +72,7 @@ export default function PartnershipScreen() {
       <Header2 title="Become a Partner" showBack={true} />
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>Become a Partner</Text>
-        <Text style={styles.subTitle}>Partnership opportunity with HomeSewa</Text>
+        <Text style={styles.subTitle}>Partnership opportunity with CleaningSewa</Text>
 
         <View style={styles.form}>
           <Text style={styles.label}>Full Name <Text style={{color:'red'}}>*</Text></Text>
@@ -82,7 +88,7 @@ export default function PartnershipScreen() {
           </View>
 
           <Text style={styles.label}>Email</Text>
-          <TextInput style={styles.input} placeholder="Enter your Email Address" value={f.email} onChangeText={v => setF({...f, email: v})} />
+          <TextInput style={styles.input} placeholder="cleaningsewa@sriyog.com" value={f.email} onChangeText={v => setF({...f, email: v})} />
 
           <Text style={styles.label}>Company Photos <Text style={{color:'red'}}>*</Text></Text>
           <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
