@@ -2,8 +2,10 @@
 
 Professional Cleaning Service Mobile & Web Application for Nepal built with Expo, React Native, and Expo Router.
 
-## Documentation
-Full system and architecture documentation is available in [DOCUMENTATION.md](DOCUMENTATION.md).
+## Documentation & Database Setup
+- **Architecture Documentation**: [DOCUMENTATION.md](DOCUMENTATION.md)
+- **Supabase Database Setup Guide**: [SUPABASE_SETUP.md](SUPABASE_SETUP.md)
+- **SQL Database Schema**: [supabase/schema.sql](supabase/schema.sql)
 
 ## Vercel Deployment
 The web version is configured for automatic deployment on Vercel via [vercel.json](vercel.json):
