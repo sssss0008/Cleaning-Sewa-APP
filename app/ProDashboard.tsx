@@ -5,6 +5,7 @@ import Header2 from '../components/Header2';
 import { useTheme } from '../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { careerService } from '../src/services/careerService';
 
 const MOCK_CUSTOMERS = [
   { id: '1', name: 'Kabita Thapa', service: 'Deep Cleaning', date: '2026-08-12', revenue: '5500' },
@@ -13,7 +14,7 @@ const MOCK_CUSTOMERS = [
 ];
 
 export default function ProDashboard() {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const [apps, setApps] = useState<any[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [profile, setProfile] = useState({ name: 'Pro Member', expertise: 'General Cleaning', experience: '5', photo: null as string | null });
@@ -25,15 +26,14 @@ export default function ProDashboard() {
 
   const loadData = async () => {
     try {
-      const aData = await AsyncStorage.getItem('pro_applications');
+      const aData = await careerService.getProApplications();
+      if (aData) setApps(aData);
       const pData = await AsyncStorage.getItem('pro_profile');
-      if (aData) setApps(JSON.parse(aData));
       if (pData) setProfile(JSON.parse(pData));
 
-      // Calculate mock income from mock customers
       const income = MOCK_CUSTOMERS.reduce((acc, curr) => acc + parseInt(curr.revenue), 0);
       setTotalIncome(income);
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error('Pro Dashboard Error:', e); }
   };
 
   const pickImage = async () => {
@@ -44,8 +44,9 @@ export default function ProDashboard() {
       quality: 0.8,
     });
     if (!result.canceled) {
-      setProfile({...profile, photo: result.assets[0].uri});
-      await AsyncStorage.setItem('pro_profile', JSON.stringify({...profile, photo: result.assets[0].uri}));
+      const updated = { ...profile, photo: result.assets[0].uri };
+      setProfile(updated);
+      await AsyncStorage.setItem('pro_profile', JSON.stringify(updated));
     }
   };
 
