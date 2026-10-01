@@ -61,16 +61,47 @@ export const bookingService = {
   },
 
   async getUserBookings() {
+    let localBookings: BookingData[] = [];
     try {
       const bData = await AsyncStorage.getItem('user_bookings');
-      if (bData) return JSON.parse(bData);
+      if (bData) localBookings = JSON.parse(bData);
     } catch (e) {
       console.error('AsyncStorage Fetch Error:', e);
     }
 
-    // Fallback to Supabase remote DB
-    const { data } = await supabaseRequest('bookings?select=*&order=created_at.desc');
-    return data || [];
+    // Fetch from Supabase remote DB
+    const { data: remoteData } = await supabaseRequest('bookings?select=*&order=created_at.desc');
+
+    if (remoteData && Array.isArray(remoteData) && remoteData.length > 0) {
+      const formattedRemote = remoteData.map((r: any) => ({
+        id: String(r.id),
+        name: r.customer_name || 'Customer',
+        phone: r.customer_phone || '',
+        city: r.city || 'Kathmandu',
+        price: String(r.total_amount || '2500'),
+        budget: String(r.total_amount || '2500'),
+        service: r.service_name || 'Cleaning Service',
+        date: r.booking_date || new Date().toDateString(),
+        status: r.status || 'Pending',
+        lead: 'App',
+      }));
+
+      const map = new Map();
+      [...localBookings, ...formattedRemote].forEach(item => {
+        if (item.id && !map.has(item.id)) {
+          map.set(item.id, item);
+        }
+      });
+
+      const merged = Array.from(map.values());
+      try {
+        await AsyncStorage.setItem('user_bookings', JSON.stringify(merged));
+      } catch (e) {}
+
+      return merged;
+    }
+
+    return localBookings;
   },
 
   async updateBookingStatus(id: string, status: string) {
